@@ -176,15 +176,21 @@ class WorkHours:
                         break
                     else:
                         try:
-                            response = int(response)
+                            response = float(response)
                         except ValueError:
                             print('Please enter a valid number\n')
                         else:
-                            valid_input = True
-                            project[stage_name]['hours'] += response
-                            print(
-                                f'{response} hours added to stage: {stage_name.title()} of project: {project_name.title()}'
-                            )
+                            if response < 0:
+                                print('Please enter a positive number\n')
+                                continue
+                            else:
+                                if response % 1 == 0:
+                                    response = int(response)
+                                valid_input = True
+                                project[stage_name]["hours"] += response
+                                print(
+                                    f'{response} hours added to stage: {stage_name.title()} of project: {project_name.title()}'
+                                )
 
     def add(self):
         project = 'add project'
@@ -318,8 +324,8 @@ class WorkHours:
         list_of_choices = [
             'add project, stage or hours',
             'consult project, stages or stage',
-            #'edit project, stage or hours',
-            #'delete project, stage or hours',
+            # 'edit project, stage or hours',
+            # 'delete project, stage or hours',
             'print predefined stages'
         ]
         list_of_choices = self.choicify_choices_with_quit(list_of_choices)
