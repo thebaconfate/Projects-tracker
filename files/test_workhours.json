@@ -1,0 +1,22 @@
+{
+    "testproject": {
+        "planning": {
+            "hours": 2,
+            "price": 0
+        },
+        "analysis": {
+            "hours": 5,
+            "price": 0
+        },
+        "design": {
+            "hours": 40,
+            "price": 20
+        }
+    },
+    "anothertestproject": {
+        "design": {
+            "hours": 40,
+            "price": 20
+        }
+    }
+}
