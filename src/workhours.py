@@ -3,6 +3,9 @@
 import json
 import inquirer
 import logging as log
+from datetime import timedelta, datetime
+from pytz import timezone
+import re
 
 
 class WorkHours:
@@ -25,6 +28,16 @@ class WorkHours:
         choices = [choice.title() for choice in choices]
         return choices
 
+    def print_tot_hrs_price(self, total_hours, total_price):
+        hours = total_hours.seconds // 3600
+        minutes = total_hours.seconds // 60 % 60
+        if minutes == 0:
+            print(
+                f'\n- Total hours: {hours}:00\n- Total price: € {total_price}\n')
+        else:
+            print(
+                f'\n- Total hours: {hours}:{minutes}\n- Total price: € {total_price}\n')
+
     def compare_with_quit_or_return(self, value):
         return value == self.quit_option or value == self.return_option
 
@@ -42,6 +55,10 @@ class WorkHours:
             data = file.read()
             file.close()
             return data
+
+    def get_current_time(self):
+        brussels = timezone('Europe/Brussels')
+        return datetime.utcnow().replace(tzinfo=brussels)
 
     def __str__(self):
         print(f'__str__: {self.projects}')
@@ -149,9 +166,12 @@ class WorkHours:
                                         response = int(response)
                                     valid_input = True
                                     project[stage_name] = {
-                                        'hours': 0,
-                                        'price': response
+                                        'time': timedelta(seconds=0),
+                                        'price': response,
+                                        'last_updated': self.get_current_time()
                                     }
+                                    print(project[stage_name]['last_updated'].strftime(
+                                        '%d-%m-%YT%H:%M:%S%z'))
                                     print(
                                         f'Stage: \"{stage_name.title()}\" added in project {project_name.title()}.\n'
                                     )
@@ -167,7 +187,9 @@ class WorkHours:
                 hours = None
                 question = {
                     inquirer.Text(
-                        'number', message='How many hours would you like to add? Or enter \"quit\" to quit')
+                        name='number',
+                        message='How much time would you like to add? Or enter \"quit\" to quit\n Format: [hours]:[minutes]', validate=lambda _, x: re.fullmatch("([0-9]+:[0-9]+){1}|[qQ][uU][iI][tT]", x)
+                    )
                 }
                 while not valid_input:
                     hours = inquirer.prompt(question)
@@ -176,20 +198,28 @@ class WorkHours:
                         break
                     else:
                         try:
-                            response = float(response)
+                            response = response.split(":")
                         except ValueError:
-                            print('Please enter a valid number\n')
+                            print(
+                                'Please enter a valid time [hours]:[minutes]\n')
                         else:
-                            if response < 0:
-                                print('Please enter a positive number\n')
-                                continue
-                            else:
-                                if response % 1 == 0:
-                                    response = int(response)
-                                valid_input = True
-                                project[stage_name]["hours"] += response
+                            valid_input = True
+                            hours = int(response[0])
+                            minutes = int(response[1])
+                            increase = timedelta(hours=hours, minutes=minutes)
+                            project[stage_name]["time"] += increase
+                            project[stage_name]["last_updated"] = self.get_current_time()
+                            tot_seconds = increase.total_seconds()
+                            minutes = (tot_seconds // 60)
+                            hours = int((minutes // 60))
+                            minutes = int(minutes % 60)
+                            if minutes < 10:
                                 print(
-                                    f'{response} hours added to stage: {stage_name.title()} of project: {project_name.title()}'
+                                    f'{hours}:0{minutes} hours added to stage: {stage_name.title()} of project: {project_name.title()}'
+                                )
+                            else:
+                                print(
+                                    f'{hours}:{minutes} hours added to stage: {stage_name.title()} of project: {project_name.title()}'
                                 )
 
     def add(self):
@@ -220,16 +250,26 @@ class WorkHours:
         if project_name is not None:
             print(f'Project: {project_name.title()}\n')
             stage_index = 1
-            total_hours = 0
+            total_hours = timedelta(seconds=0)
             total_price = 0
             for stage, dct in project.items():
-                print(
-                    f'\tStage {stage_index}: {stage.title()} --- {dct["hours"]} hours --- €{dct["price"]} per hour')
+                time = dct["time"]
+                hours = time.seconds // 3600
+                minutes = time.seconds // 60 % 60
+                if minutes < 9:
+                    print(
+                        f'\tStage {stage_index}: {stage.title()} --- {hours}:0{minutes} hours --- € {dct["price"]} per hour'
+                    )
+                else:
+                    print(
+                        f'\tStage {stage_index}: {stage.title()} --- {hours}:{minutes} hours --- € {dct["price"]} per hour'
+                    )
                 stage_index += 1
-                total_hours += dct["hours"]
-                total_price += dct["hours"] * dct["price"]
-            print(
-                f'\n- Total hours: {total_hours}\n- Total price: €{total_price}\n')
+                total_hours += time
+                remainder = minutes % 15
+                total_price += hours * dct["price"] + \
+                    (minutes - remainder) / 60 * dct["price"]
+            self.print_tot_hrs_price(total_hours, total_price)
 
     def consult_stage(self):
         message = 'For which project would you like to consult a stage?'
@@ -240,11 +280,21 @@ class WorkHours:
             if stage_name is not None:
                 print(f'Project: {project_name.title()}\n')
                 stage_index = list(project.keys()).index(stage_name) + 1
-                print(
-                    f'\tStage {stage_index}: {stage_name.title()} --- {project[stage_name]["hours"]} hours --- €{project[stage_name]["price"]} per hour\n'
-                )
-            print(
-                f'- Total price: €{project[stage_name]["hours"] * project[stage_name]["price"]}\n')
+                stage = project[stage_name]
+                hours = stage["time"].seconds // 3600
+                minutes = stage["time"].seconds // 60 % 60
+                if minutes < 10:
+                    print(
+                        f'\tStage {stage_index}: {stage_name.title()} --- {hours}:0{minutes} hours --- €{stage["price"]} per hour\n'
+                    )
+                else:
+                    print(
+                        f'\tStage {stage_index}: {stage_name.title()} --- {hours}:{minutes} hours --- €{stage["price"]} per hour\n'
+                    )
+                remainder = minutes % 15
+                total_price = hours * stage["price"] + \
+                    (minutes - remainder) / 60 * stage["price"]
+                self.print_tot_hrs_price(stage["time"], total_price)
 
     def get_stages(self, project, message):
         question = {
@@ -265,17 +315,26 @@ class WorkHours:
             message = 'Which stages would you like to consult?'
             stages = self.get_stages(project, message)
             print(f'Project: {project_name.title()}\n')
-            total_hours = 0
+            total_hours = timedelta(seconds=0)
             total_price = 0
             list_of_stages = list(project.keys())
             for stage in stages:
-                print(
-                    f'\tStage  {list_of_stages.index(stage) + 1}: {stage.title()} --- {project[stage]["hours"]} hours --- €{project[stage]["price"]} per hour')
-                total_hours += project[stage]["hours"]
-                total_price += project[stage]["hours"] * \
-                    project[stage]['price']
-            print(
-                f'\n- Total hours: {total_hours}\n- Total price: €{total_price}\n')
+                index = list_of_stages.index(stage) + 1
+                time = project[stage]['time']
+                hours = time.seconds // 3600
+                minutes = time.seconds // 60 % 60
+                if minutes == 0:
+                    print(
+                        f'\tStage  {index}: {stage.title()} --- {hours}:00 hours --- € {project[stage]["price"]} per hour')
+                else:
+                    print(
+                        f'\tStage  {index}: {stage.title()} --- {hours}:{minutes} hours --- € {project[stage]["price"]} per hour')
+                total_hours += time
+                remainder = minutes % 15
+                total_price += hours * \
+                    project[stage]["price"] + \
+                    (minutes - remainder) / 60 * project[stage]["price"]
+            self.print_tot_hrs_price(total_hours, total_price)
 
     def consult(self):
         project = 'consult project'

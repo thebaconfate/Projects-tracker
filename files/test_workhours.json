@@ -1,22 +1,38 @@
 {
     "testproject": {
         "planning": {
-            "hours": 2,
-            "price": 0
+            "time": {
+                "days": 0,
+                "seconds": 7200
+            },
+            "price": 0,
+            "last_updated": "17-07-2023T15:23:21+0018"
         },
         "analysis": {
-            "hours": 5,
-            "price": 0
+            "time": {
+                "days": 0,
+                "seconds": 18000
+            },
+            "price": 0,
+            "last_updated": "17-07-2023T15:23:21+0018"
         },
         "design": {
-            "hours": 40,
-            "price": 20
+            "time": {
+                "days": 1,
+                "seconds": 77400
+            },
+            "price": 20,
+            "last_updated": "17-07-2023T15:23:21+0018"
         }
     },
     "anothertestproject": {
         "design": {
-            "hours": 40,
-            "price": 20
+            "time": {
+                "days": 1,
+                "seconds": 57600
+            },
+            "price": 20,
+            "last_updated": "17-07-2023T15:23:21+0018"
         }
     }
 }
