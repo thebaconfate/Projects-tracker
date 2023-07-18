@@ -29,11 +29,11 @@ class WorkHours:
         return choices
 
     def print_tot_hrs_price(self, total_hours, total_price):
-        hours = total_hours.seconds // 3600
-        minutes = total_hours.seconds // 60 % 60
-        if minutes == 0:
+        hours = int(total_hours.total_seconds() // 3600)
+        minutes = int(total_hours.total_seconds() // 60 % 60)
+        if minutes < 10:
             print(
-                f'\n- Total hours: {hours}:00\n- Total price: € {total_price}\n')
+                f'\n- Total hours: {hours}:0{minutes}\n- Total price: € {total_price}\n')
         else:
             print(
                 f'\n- Total hours: {hours}:{minutes}\n- Total price: € {total_price}\n')
@@ -254,9 +254,9 @@ class WorkHours:
             total_price = 0
             for stage, dct in project.items():
                 time = dct["time"]
-                hours = time.seconds // 3600
-                minutes = time.seconds // 60 % 60
-                if minutes < 9:
+                hours = int(time.total_seconds() // 3600)
+                minutes = int(time.total_seconds() // 60 % 60)
+                if minutes < 10:
                     print(
                         f'\tStage {stage_index}: {stage.title()} --- {hours}:0{minutes} hours --- € {dct["price"]} per hour'
                     )
@@ -281,8 +281,8 @@ class WorkHours:
                 print(f'Project: {project_name.title()}\n')
                 stage_index = list(project.keys()).index(stage_name) + 1
                 stage = project[stage_name]
-                hours = stage["time"].seconds // 3600
-                minutes = stage["time"].seconds // 60 % 60
+                hours = int(stage["time"].total_seconds() // 3600)
+                minutes = int(stage["time"].total_seconds() // 60 % 60)
                 if minutes < 10:
                     print(
                         f'\tStage {stage_index}: {stage_name.title()} --- {hours}:0{minutes} hours --- €{stage["price"]} per hour\n'
@@ -321,11 +321,11 @@ class WorkHours:
             for stage in stages:
                 index = list_of_stages.index(stage) + 1
                 time = project[stage]['time']
-                hours = time.seconds // 3600
-                minutes = time.seconds // 60 % 60
-                if minutes == 0:
+                hours = int(time.total_seconds() // 3600)
+                minutes = int(time.total_seconds() // 60 % 60)
+                if minutes < 10:
                     print(
-                        f'\tStage  {index}: {stage.title()} --- {hours}:00 hours --- € {project[stage]["price"]} per hour')
+                        f'\tStage  {index}: {stage.title()} --- {hours}:0{minutes} hours --- € {project[stage]["price"]} per hour')
                 else:
                     print(
                         f'\tStage  {index}: {stage.title()} --- {hours}:{minutes} hours --- € {project[stage]["price"]} per hour')
