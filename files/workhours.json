@@ -2,11 +2,11 @@
     "digitaliseringsproject": {
         "design": {
             "time": {
-                "days": 2,
-                "seconds": 81600
+                "days": 3,
+                "seconds": 0
             },
             "price": 20,
-            "last_updated": "18-07-2023T21:35:03+0018"
+            "last_updated": "19-07-2023T01:13:24+0018"
         }
     }
 }
