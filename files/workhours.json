@@ -3,10 +3,10 @@
         "design": {
             "time": {
                 "days": 3,
-                "seconds": 0
+                "seconds": 10920
             },
             "price": 20,
-            "last_updated": "19-07-2023T01:13:24+0018"
+            "last_updated": "29-07-2023T04:24:07+0018"
         }
     }
 }
