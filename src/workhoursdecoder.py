@@ -15,7 +15,6 @@ class WorkhoursDecoder(json.JSONDecoder):
             decodedjson['last_updated'] = datetime.strptime(
                 dct['last_updated'], '%d-%m-%YT%H:%M:%S%z')
             return decodedjson
-            '%d-%m-%YT%H:%M:%S'
         if 'last_updated' not in dct and 'time' in dct and 'price' in dct:  # to decode new version 0.0.1 json files
             decodedjson = {}
             decodedjson['time'] = dct['time']

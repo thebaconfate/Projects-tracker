@@ -1,14 +1,10 @@
-from datetime import datetime, timedelta
-import sys
+from datetime import datetime
 from pytz import timezone, utc
 import os
 from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, make_response, request
 from src.classes.errors import Errors
 from src.classes.workhours import Workhours
-import src.workhours as wh
-import src.workhoursdecoder as dec
-import src.workhoursencoder as enc
 from flask_mysqldb import MySQL
 
 testing = True
