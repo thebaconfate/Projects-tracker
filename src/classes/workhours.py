@@ -22,10 +22,8 @@ class Workhours:
             cursor.close()
         except Exception:
             cursor.close()
-            error = 'Method: ' + sys._getframe().f_code.co_name.__str__() + ' in Class: ' + self.__class__.__name__.__str__()
-            return Errors("Caught exception", error , "Something went wrong while initializing the tables.")
+            error = 'Method: ' + sys._getframe().f_code.co_name.__str__() + \
+                ' in Class: ' + self.__class__.__name__.__str__()
+            return Errors("Caught exception", error, "Something went wrong while initializing the tables.")
         else:
             return Success("Ok", 'Tables were already initialized or were created successfully.')
-        
-        
-

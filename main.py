@@ -3,7 +3,7 @@ import sys
 from pytz import timezone, utc
 import os
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, abort, jsonify, make_response, request
 from src.classes.errors import Errors
 from src.classes.workhours import Workhours
 import src.workhours as wh
@@ -27,9 +27,19 @@ mysql = MySQL(app)
 workhours = Workhours(mysql)
 
 
+@app.errorhandler(500)
+def internal_error(error):
+    return "Error, check logs", 500
+
+
 @app.get('/init_tables')
 def init_tables():
-    return workhours.init_tables().get_report()
+    report = workhours.init_tables()
+    result = jsonify(report.get_report())
+    if isinstance(report, Errors):
+        abort(500)
+    else:
+        return result 
 
 
 @app.route('/projects')
