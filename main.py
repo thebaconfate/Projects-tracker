@@ -100,6 +100,19 @@ def migrate_projects():
     # TODO implement this
     pass
 
+# TODO Implement a route that allows the user to add a project to the database.
+# TODO Implement a route that allows the user to add a stage to a project in the database.
+# TODO Implement a route that allows the user to rename a stage in the database. 
+# TODO Implement a route that allows the user to update a price of a stage in the databse
+# TODO implement a route that allows the user to update the days & hours spent on a stage. This should automatically update the last update value of the stage.
+# TODO Implement a route that allows the user to delete a stage from the database.
+# TODO Implement a route that allows the user to delete a project from the database.
+# TODO Implement a route that allows the user to rename a project in the database.
+
+# TODO Add user authentication and authorization so only an admin can migrate projects and stages.
+# TODO Add user authentication so each user can only create edit and remove their own projects and stages.
+
+
 
 if __name__ == "__main__":
     load_dotenv()
