@@ -1,8 +1,9 @@
 {
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8"
-  },
-  "python.formatting.provider": "none",
-  "activestate.promptRuntimeCreation": false,
-  "cSpell.words": ["workhours"]
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.autopep8"
+	},
+	"python.formatting.provider": "none",
+	"activestate.promptRuntimeCreation": false,
+	"cSpell.words": ["workhours"],
+	"python.analysis.extraPaths": ["./src"]
 }

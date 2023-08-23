@@ -3,8 +3,7 @@ from pytz import timezone, utc
 import os
 from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, make_response, request
-from src.classes.errors import Errors
-from src.classes.workhours import Workhours
+from src.classes.requesthandler import Requesthandler
 from flask_mysqldb import MySQL
 
 testing = True
@@ -19,90 +18,46 @@ app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv(
     'MYSQL_DB_TEST') if testing else os.getenv('MYSQL_DB')
-mysql = MySQL(app)
-workhours = Workhours(mysql)
+db = MySQL(app)
+handler = Requesthandler(db=db)
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    return "Error, check logs", 500
+    return os.getenv('ERROR_500_MSG'), 500
 
 
 @app.get('/init_tables')
 def init_tables():
-    report = workhours.init_tables()
-    result = jsonify(report.get_report())
-    if isinstance(report, Errors):
-        abort(500)
-    else:
-        return result 
+    handler.init_tables()
+    return 'done', 200
 
-
-@app.route('/projects')
+# * gets all projects
+@app.get('/projects')
 def get_projects():
-    query = "SELECT project_id, project_name FROM projects"
-    cursor = mysql.connection.cursor()
-    cursor.execute(query)
-    headers = cursor.description
-    rows = cursor.fetchall()
-    results = []
-    for i in range(0, len(rows)):
-        results.append({
-            "project_id": rows[i][0],
-            "project_name": rows[i][1]
-        })
-    results = {"projects": results}
-    cursor.close()
-    return results
+    results = handler.get_projects()
+    return results, 200
 
-
-@app.route('/<project_name>/stages')
+# * gets all stages from a project
+@app.get('/<project_name>/')
 def get_stages(project_name):
-    query = f'SELECT stage_name FROM stages where project_id = (SELECT project_id FROM projects where project_name = {project_name})'
-    cursor = mysql.connection.cursor()
-    cursor.execute(query)
-    headers = cursor.description
-    rows = cursor.fetchall()
-    results = [rows]
-    """ for i in range(0, len(rows)):
-        results.append({
-            "project_id": rows[i][0],
-            "project_name": rows[i][1]
-        }) """
-    results = {"projects": results}
-    cursor.close()
-    return results
+    result = handler.get_stages(project_name)
+    return result, 200
 
 
-@app.get('/<project_name>')
-def get_project(project_name):
-    query = f"SELECT Projects.project_name, Stages.stage_name, Stages.days, Stages.seconds, stages.stage_price from projects right join stages on projects.project_id = stages.project_id where Projects.project_name = '{project_name}'"
-    cursor = mysql.connection.cursor()
-    cursor.execute(query)
-    headers = [description[0] for description in cursor.description]
-    rows = cursor.fetchall()
-    results = {}
-    print(f'{headers}\n')
-    print(rows)
-    for i in range(0, len(rows)):
-        results[rows[i][1]] = {
-            "time": {
-                headers[2]: rows[i][2],
-                headers[3]: rows[i][3]
-            },
-            headers[4]: rows[i][4]
-        }
-    cursor.close()
-    return results
+@app.get('/<project_name>/<stage_name>')
+def get_project(project_name, stage_name):
+    result = handler.get_stage(project_name, stage_name)
+    return result
 
 
 @app.post('/migrate/<project_name>')
 def migrate_project(project_name):
     stages = request.json
-    cursor = mysql.connection.cursor()
+    cursor = db.connection.cursor()
     cursor.execute(
         f'''INSERT INTO PROJECTS (project_name) SELECT ("{project_name}") WHERE NOT EXISTS (SELECT project_id FROM projects WHERE project_name = "{project_name}")''')
-    mysql.connection.commit()
+    db.connection.commit()
     project_id = cursor.execute(
         f"SELECT project_id FROM projects WHERE project_name = '{project_name}'")
     for stage, stage_property in stages.items():
@@ -122,7 +77,7 @@ def migrate_project(project_name):
                 );'''
         print(query)
         cursor.execute(query)
-        mysql.connection.commit()
+        db.connection.commit()
 
     cursor.close()
     return 'migration succesfull', 200
