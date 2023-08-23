@@ -33,16 +33,22 @@ def init_tables():
     return 'done', 200
 
 # * gets all projects
+
+
 @app.get('/projects')
 def get_projects():
     results = handler.get_projects()
     return results, 200
 
 # * gets all stages from a project
+
+
 @app.get('/<project_name>/')
 def get_stages(project_name):
     result = handler.get_stages(project_name)
     return result, 200
+
+# * gets information about a stage
 
 
 @app.get('/<project_name>/<stage_name>')
@@ -50,9 +56,14 @@ def get_project(project_name, stage_name):
     result = handler.get_stage(project_name, stage_name)
     return result
 
+# * migrates stage(s) from a json file to the database. Also adds the project if it doesn't exist.
+
 
 @app.post('/migrate/<project_name>')
-def migrate_project(project_name):
+def migrate_stages(project_name):
+
+    # TODO refactor this
+
     stages = request.json
     cursor = db.connection.cursor()
     cursor.execute(
@@ -81,6 +92,13 @@ def migrate_project(project_name):
 
     cursor.close()
     return 'migration succesfull', 200
+# * migrates all projects and stages from a json file to the database.
+
+
+@app.post('/migrate')
+def migrate_projects():
+    # TODO implement this
+    pass
 
 
 if __name__ == "__main__":
