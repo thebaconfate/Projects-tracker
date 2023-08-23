@@ -1,5 +1,5 @@
 '''Program to keep track of working hours per project, including design and other phases that aren't tracked by Wakatime'''
-import flask 
+import flask
 import json
 import inquirer
 import logging as log
@@ -7,6 +7,7 @@ from datetime import timedelta, datetime
 from pytz import timezone
 import re
 
+# ! THIS CLASS IS DEPRECATED, DO NOT USE
 
 
 class WorkHours:
