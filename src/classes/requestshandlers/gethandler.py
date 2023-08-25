@@ -20,6 +20,19 @@ class Gethandler():
                 "project_name": projects[i][1]
             })
         return results
+    
+    def get_project(self, project_name):
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            '''SELECT * from projects where project_name = %s''', (project_name,))
+        rows = cursor.fetchall()
+        cursor.close()
+        for row in rows:
+            result = {
+                "project_id": row[0],
+                "project_name": row[1]
+            }
+        return result
 
     def get_stages(self, project_name):
         query = f'''SELECT stage_id, stage_name FROM stages where project_id = (SELECT project_id FROM projects where project_name = '{project_name}')'''
@@ -36,9 +49,9 @@ class Gethandler():
         return result
 
     def get_stage(self, project_name, stage_name):
-        query = f'''SELECT * from stages where stage_name = '{stage_name}' and project_id = (SELECT project_id FROM projects where project_name = '{project_name}')'''
         cursor = self.db.connection.cursor()
-        cursor.execute(query)
+        cursor.execute(
+            '''SELECT * from stages where stage_name = %s and project_id = (SELECT id FROM projects where project_name = %s)''', (stage_name, project_name))
         rows = cursor.fetchall()
         cursor.close()
         for row in rows:
