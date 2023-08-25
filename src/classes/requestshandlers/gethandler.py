@@ -2,7 +2,7 @@
 ''' class to delegate requests that fetch data to.'''
 
 
-class Gethandler():
+class GetHandler():
 
     def __init__(self, db):
         self.db = db
@@ -20,7 +20,7 @@ class Gethandler():
                 "project_name": projects[i][1]
             })
         return results
-    
+
     def get_project(self, project_name):
         cursor = self.db.connection.cursor()
         cursor.execute(
