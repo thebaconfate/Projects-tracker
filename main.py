@@ -84,6 +84,11 @@ def migrate_projects():
     handler.migrate_projects(request.json)
     return 'migration successful', 200
 
+@app.post('/add_project:<project_name>')
+def add_project(project_name):
+    handler.add_project(project_name)
+    return 'project added', 200
+
 
 # TODO Implement a route that allows the user to add a project to the database.
 # TODO Implement a route that allows the user to add a stage to a project in the database.

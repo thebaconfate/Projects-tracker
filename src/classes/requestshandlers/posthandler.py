@@ -32,6 +32,18 @@ class Posthandler():
                     return False
             result = True
         return result
+    
+    def add_project(self, project_name):
+        cursor = self.db.connection.cursor()
+        cursor.execute("SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
+        project_id = cursor.fetchone()
+        if project_id is None:
+            cursor.execute('''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
+            self.db.connection.commit()
+            cursor.execute('''SELECT id FROM projects where project_name = %s''', (project_name,))
+            project_id = cursor.fetchone()[0]
+        cursor.close()
+        return project_id
 
     # * migrates stage(s) from a json file to the database if they don't already exist. Also adds the project if it doesn't exist.
     # ! The migration of stages assumes the time is set in europe/brussels. However it is saved as utc in the database.
@@ -40,21 +52,9 @@ class Posthandler():
         if verify_payload:
             valid = self.__verify_stages_payload(stages)
         if valid:
-            cursor = self.db.connection.cursor()
-            cursor.execute(
-                "SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
-            project_exists = cursor.fetchone()
-            project_id = None
-            if project_exists is None:
-                cursor.execute(
-                    '''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
-                self.db.connection.commit()
-                cursor.execute(
-                    '''SELECT id FROM projects where project_name = %s''', (project_name,))
-                project_id = cursor.fetchone()[0]
-            else:
-                project_id = project_exists[0]
+            project_id = self.add_project(project_name)
             stages_names = []
+            cursor = self.db.connection.cursor()
             if project_id is not None:
                 cursor.execute(
                     '''SELECT stage_name FROM stages WHERE project_id = %s''', (project_id,))
