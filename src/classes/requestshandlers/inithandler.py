@@ -1,8 +1,6 @@
 
 import sys
 from pytz import timezone
-from src.classes.errors import Errors
-from src.classes.success import Success
 
 
 class Inithandler():
@@ -11,6 +9,7 @@ class Inithandler():
         self.db = db
 
     def init_tables(self):
+        print('init tables')
         cursor = self.db.connection.cursor()
         create_projects = "CREATE TABLE IF NOT EXISTS projects (project_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL, project_name VARCHAR(255) NOT NULL);"
         cursor.execute(create_projects)
@@ -18,5 +17,6 @@ class Inithandler():
         cursor.execute(create_stages)
         self.db.connection.commit()
         cursor.close()
+        print('done')
 
  

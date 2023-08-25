@@ -4,6 +4,16 @@
 	},
 	"python.formatting.provider": "none",
 	"activestate.promptRuntimeCreation": false,
-	"cSpell.words": ["workhours"],
+	"cSpell.words": [
+		"customerror",
+		"customerrors",
+		"dotenv",
+		"inputerror",
+		"jsonify",
+		"mysqldb",
+		"pytz",
+		"Requesthandler",
+		"workhours"
+	],
 	"python.analysis.extraPaths": ["./src"]
 }
