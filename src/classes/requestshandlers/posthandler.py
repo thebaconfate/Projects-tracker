@@ -2,17 +2,19 @@ from datetime import datetime
 from functools import reduce
 
 from pytz import timezone, utc
+from src.classes.requestshandlers.gethandler import GetHandler
 from src.classes.customerrors.inputerror import InputException
 
 
 '''class to delegate requests that add, and update data.'''
 
 
-class Posthandler():
+class Posthandler(GetHandler):
 
-    def __init__(self, db):
+
+    def __init__(self, db, standard_tz):
         self.db = db
-        self.standard_tz = timezone('Europe/Brussels')
+        self.timezone = standard_tz
     # verifies the structure of the payload
 
     def __verify_stages_payload(self, payload):
@@ -33,19 +35,7 @@ class Posthandler():
             result = True
         return result
     
-    def add_project(self, project_name):
-        cursor = self.db.connection.cursor()
-        cursor.execute("SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
-        project_id = cursor.fetchone()
-        if project_id is None:
-            cursor.execute('''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
-            self.db.connection.commit()
-            cursor.execute('''SELECT id FROM projects where project_name = %s''', (project_name,))
-            project_id = cursor.fetchone()[0]
-        cursor.close()
-        return project_id
-
-    # * migrates stage(s) from a json file to the database if they don't already exist. Also adds the project if it doesn't exist.
+        # * migrates stage(s) from a json file to the database if they don't already exist. Also adds the project if it doesn't exist.
     # ! The migration of stages assumes the time is set in europe/brussels. However it is saved as utc in the database.
     def migrate_stages(self, project_name, stages, verify_payload=True):
         valid = True
@@ -62,9 +52,8 @@ class Posthandler():
             for stage in stages:
                 if stage['name'] in stages_names:
                     continue
-                belgian_time = timezone('Europe/Brussels')
                 last_updated = datetime.strptime(
-                    stage['last_updated'], '%d-%m-%YT%H:%M:%S%z').replace(tzinfo=belgian_time)
+                    stage['last_updated'], '%d-%m-%YT%H:%M:%S%z').replace(tzinfo=self.standard_tz)
                 print(last_updated)
                 last_updated = last_updated.astimezone(utc)
                 print(last_updated)
@@ -75,7 +64,7 @@ class Posthandler():
             self.db.connection.commit()
             cursor.close()
         else:
-            raise InputException('invalid payload')
+            raise InputException('invalid stages payload')
 
     def migrate_projects(self, payload):
         valid = self._verify_projects_payload(payload)
@@ -84,4 +73,36 @@ class Posthandler():
                 self.migrate_stages(
                     project['name'], project['stages'], verify_payload=False)
         else:
-            raise InputException('invalid payload')
+            raise InputException('invalid project payload')
+
+    
+    def create_project(self, project):
+        project_name = project['name']
+        cursor = self.db.connection.cursor()
+        cursor.execute("SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
+        project_id = cursor.fetchone()
+        if project_id is None:
+            cursor.execute('''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
+            self.db.connection.commit()
+            cursor.execute('''SELECT id FROM projects where project_name = %s''', (project_name,))
+            project_id = cursor.fetchone()[0]
+        cursor.close()
+        return project_id
+
+
+    def create_stage(self, project_id, stage):
+        exists = self.get_project(project_id)
+        if exists is None:
+            raise InputException('Project does not exist')
+        cursor = self.db.connection.cursor()
+        print(stage)
+        try: 
+            last_updated = datetime.strptime(
+                stage['last_updated'], '%d-%m-%YT%H:%M:%S%z').replace(tzinfo=self.standard_tz)
+            last_updated = last_updated.astimezone(utc)
+            cursor.execute('''INSERT INTO stages (stage_name, project_id, days,seconds, stage_price, last_updated) VALUES (%s, %s,%s,%s, %s,%s)''', (stage['name'], project_id, stage['time']['days'], stage['time']['seconds'], stage['price'], last_updated))
+            self.db.connection.commit()
+            cursor.close()
+        except Exception:
+            cursor.close()
+            raise InputException('Invalid stage payload')

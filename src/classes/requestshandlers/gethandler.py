@@ -21,47 +21,54 @@ class GetHandler():
             })
         return results
 
-    def get_project(self, project_name):
+    def get_project(self, project_id):
         cursor = self.db.connection.cursor()
         cursor.execute(
-            '''SELECT * from projects where project_name = %s''', (project_name,))
+            '''SELECT id, stage_name from stages where project_id = %s''', (project_id,))
         rows = cursor.fetchall()
         cursor.close()
+        result = []
         for row in rows:
-            result = {
-                "project_id": row[0],
-                "project_name": row[1]
-            }
+            result.append({
+                "id": row[0],
+                "stage_name": row[1]
+            })
         return result
 
-    def get_stages(self, project_name):
+    # * get all stages from a user
+    # ! this function is currently not in use
+    def get_stages(self, project_id):
         cursor = self.db.connection.cursor()
         cursor.execute(
-            '''SELECT stage_id, stage_name FROM stages where project_id = (SELECT id FROM projects where project_name = %s)''', (project_name,))
+            '''SELECT id, project_id, stage_name FROM stages where project_id = id''', (project_id,))
         rows = cursor.fetchall()
         cursor.close()
         result = []
         for row in rows:
             result.append({
                 "stage_id": row[0],
-                "stage_name": row[1]
+                "project_id": row[1],
+                "stage_name": row[2]
             })
         return result
 
-    def get_stage(self, project_name, stage_name):
+    def get_stage(self, project_id, stage_id):
         cursor = self.db.connection.cursor()
         cursor.execute(
-            '''SELECT * from stages where stage_name = %s and project_id = (SELECT id FROM projects where project_name = %s)''', (stage_name, project_name))
+            '''SELECT * from stages where id = %s and project_id = %s''', (stage_id, project_id))
         rows = cursor.fetchall()
         cursor.close()
+        result = []
         for row in rows:
-            result = {
+            result.append({
                 "stage_id": row[0],
                 "stage_name": row[1],
                 "project_id": row[2],
-                "days": row[3],
-                "seconds": row[4],
-                "stage_price": row[5],
+                "time": {
+                    "days": row[3],
+                    "seconds": row[4]
+                },
+                "price": row[5],
                 "last_updated": row[6]
-            }
+            })
         return result

@@ -23,7 +23,7 @@ app.config['MYSQL_DB'] = os.getenv(
     'MYSQL_DB_TEST') if testing else os.getenv('MYSQL_DB')
 db = MySQL(app)
 
-handler = Requesthandler(db)
+handler = Requesthandler(db, timezone('Europe/Brussels'))
 
 # * error handler for thrown exceptions.
 
@@ -49,45 +49,52 @@ def init_tables():
     handler.init_tables()
     return 'done', 200
 
-
-# * gets all projects names and ids from the database.
-@app.get('/projects')
-def get_projects():
-    results = handler.get_projects()
-    return results, 200
-
-
-# * gets all stages from a project
-@app.get('/<project_name>/')
-def get_stages(project_name):
-    result = handler.get_stages(project_name)
-    return result, 200
-
-
-# * gets information about a stage from a project
-@app.get('/<project_name>/<stage_name>')
-def get_project(project_name, stage_name):
-    result = handler.get_stage(project_name, stage_name)
-    return result, 200
-
-
 # * migrates stage(s) from a json file to the database. Also adds the project if it doesn't exist.
-@app.post('/migrate/<project_name>')
+@app.post('/migrate/project:<project_name>')
 def migrate_stages(project_name):
     handler.migrate_stages(project_name, request.json)
     return 'migration successful', 200
 
 
 # * migrates all projects and stages from a json file to the database.
-@app.post('/migrate')
+@app.post('/migrate/projects')
 def migrate_projects():
     handler.migrate_projects(request.json)
     return 'migration successful', 200
 
-@app.post('/add_project:<project_name>')
-def add_project(project_name):
-    handler.add_project(project_name)
+# * gets all projects names and ids from the database.
+@app.get('/projects:all')
+def get_projects():
+    # TODO add user_id to the request
+    results = handler.get_projects()
+    return results, 200
+
+
+# * gets all stages from a project
+@app.get('/project:<project_id>/stages:all')
+def get_stages(project_id):
+    result = handler.get_project(project_id)
+    return result, 200
+
+
+# * gets information about a stage from a project
+@app.route('/project:<project_id>/stage:<stage_id>', methods=['GET'])
+def get_project(project_id, stage_id):
+    if request.method == 'GET':
+        result = handler.get_stage(project_id, stage_id)
+        return result, 200
+
+
+# * adds a project to the database
+@app.post('/create_project')
+def create_project():
+    handler.create_project(request.json)
     return 'project added', 200
+
+@app.post('/project:<project_id>/create_stage')
+def create_stage(project_id):
+    handler.create_stage(project_id, request.json)
+    return 'stage added', 200
 
 
 # TODO Implement a route that allows the user to add a project to the database.

@@ -8,8 +8,8 @@ from src.classes.requestshandlers.puthandler import Puthandler
 ''' main requests handler class'''
 
 
-class Requesthandler(Delhandler, Puthandler, GetHandler, Posthandler, Inithandler):
-    def __init__(self, db):
+class Requesthandler(Delhandler, Puthandler, Posthandler, GetHandler, Inithandler):
+    def __init__(self, db, standard_tz):
         super().__init__(db)
         self.db = db
-        self.timezone = timezone('Europe/Brussels')
+        self.standard_tz = standard_tz
