@@ -35,9 +35,9 @@ class GetHandler():
         return result
 
     def get_stages(self, project_name):
-        query = f'''SELECT stage_id, stage_name FROM stages where project_id = (SELECT project_id FROM projects where project_name = '{project_name}')'''
         cursor = self.db.connection.cursor()
-        cursor.execute(query)
+        cursor.execute(
+            '''SELECT stage_id, stage_name FROM stages where project_id = (SELECT id FROM projects where project_name = %s)''', (project_name,))
         rows = cursor.fetchall()
         cursor.close()
         result = []
