@@ -11,7 +11,6 @@ from src.classes.customerrors.inputerror import InputException
 
 class Posthandler(GetHandler):
 
-
     def __init__(self, db, standard_tz):
         self.db = db
         self.timezone = standard_tz
@@ -34,7 +33,7 @@ class Posthandler(GetHandler):
                     return False
             result = True
         return result
-    
+
         # * migrates stage(s) from a json file to the database if they don't already exist. Also adds the project if it doesn't exist.
     # ! The migration of stages assumes the time is set in europe/brussels. However it is saved as utc in the database.
     def migrate_stages(self, project_name, stages, verify_payload=True):
@@ -75,20 +74,21 @@ class Posthandler(GetHandler):
         else:
             raise InputException('invalid project payload')
 
-    
     def create_project(self, project):
         project_name = project['name']
         cursor = self.db.connection.cursor()
-        cursor.execute("SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
+        cursor.execute(
+            "SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
         project_id = cursor.fetchone()
         if project_id is None:
-            cursor.execute('''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
+            cursor.execute(
+                '''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
             self.db.connection.commit()
-            cursor.execute('''SELECT id FROM projects where project_name = %s''', (project_name,))
+            cursor.execute(
+                '''SELECT id FROM projects where project_name = %s''', (project_name,))
             project_id = cursor.fetchone()[0]
         cursor.close()
         return project_id
-
 
     def create_stage(self, project_id, stage):
         exists = self.get_project(project_id)
@@ -96,12 +96,12 @@ class Posthandler(GetHandler):
             raise InputException('Project does not exist')
         cursor = self.db.connection.cursor()
         print(stage)
-        try: 
-            last_updated = datetime.strptime(
-                stage['last_updated'], '%d-%m-%YT%H:%M:%S%z').replace(tzinfo=self.standard_tz)
-            last_updated = last_updated.astimezone(utc)
-            cursor.execute('''INSERT INTO stages (stage_name, project_id, days,seconds, stage_price, last_updated) VALUES (%s, %s,%s,%s, %s,%s)''', (stage['name'], project_id, stage['time']['days'], stage['time']['seconds'], stage['price'], last_updated))
+        try:
+            last_updated = datetime.now(tz=self.standard_tz).astimezone(utc)
+            cursor.execute('''INSERT INTO stages (stage_name, project_id, days,seconds, stage_price, last_updated) VALUES (%s, %s,%s,%s, %s,%s)''',
+                           (stage['name'], project_id, stage['time']['days'], stage['time']['seconds'], stage['price'], last_updated))
             self.db.connection.commit()
+            print(last_updated)
             cursor.close()
         except Exception:
             cursor.close()

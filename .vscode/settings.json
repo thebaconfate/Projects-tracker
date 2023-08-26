@@ -8,11 +8,14 @@
 		"customerror",
 		"customerrors",
 		"dotenv",
+		"gethandler",
 		"inputerror",
 		"jsonify",
 		"mysqldb",
+		"Posthandler",
 		"pytz",
 		"Requesthandler",
+		"requestshandlers",
 		"workhours"
 	],
 	"python.analysis.extraPaths": ["./src"]
