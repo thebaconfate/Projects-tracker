@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, post_load
-from src.classes.models.stage import Stage
+from classes.models.stage import Stage
 from datetime import datetime
 from pytz import timezone, utc
 
@@ -11,7 +11,7 @@ class StageSchema(Schema):
     price = fields.Float(default=0.0)
     days = fields.Int(load_default=0)
     seconds = fields.Int(load_default=0)
-    last_update = fields.DateTime(dump_default=datetime.now(tz=timezone('Europe/Brussels')).astimezone(utc)).format('%d-%m-%Y %H:%M:%S%z')
+    last_updated = fields.DateTime()
 
     @post_load
     def make_stage(self, data, **kwargs):

@@ -4,7 +4,7 @@
 
 from classes.models.User import User
 from classes.schemas.projectschema import ProjectSchema
-from classes.schemas.userschema import UserSchema 
+from classes.schemas.userschema import UserSchema
 
 
 class GetHandler():
@@ -24,46 +24,39 @@ class GetHandler():
         else:
             return None
 
-    def get_projects(self, user: User):
+    def get_projects(self, user):
         cursor = self.db.connection.cursor()
-        cursor.execute("SELECT * FROM projects where owner_id = %s", (user.id,))
+        cursor.execute(
+            "SELECT id, name FROM projects where owner_id = %s", (user.id,))
         projects = cursor.fetchall()
         cursor.close()
-        parsed_projects = [{"id": project[0], "name":project[1] , "owner_id": project[2]} for project in projects]
+        parsed_projects = [{"id": project[0], "name":project[1],
+                            "owner_id": user.id} for project in projects]
         schema = ProjectSchema(many=True)
         results = schema.load(parsed_projects)
         return schema.dump(results)
 
-    def get_project(self, project_id):
+    def get_project(self, project_id, user):
+        schema = ProjectSchema()
+        project = schema.load({"id": project_id, "owner_id": user.id}, partial=('name',))
         cursor = self.db.connection.cursor()
         cursor.execute(
-            '''SELECT id, stage_name from stages where project_id = %s''', (project_id,))
-        rows = cursor.fetchall()
+            '''SELECT * from projects WHERE id = %s AND owner_id = %s''', (project.id, project.owner_id))
+        rows = cursor.fetchone()
         cursor.close()
-        result = []
-        for row in rows:
-            result.append({
-                "id": row[0],
-                "stage_name": row[1]
-            })
-        return result
+        return schema.load({"id": rows[0], "name": rows[1], "owner_id": rows[2]})
 
     # * get all stages from a user
     # ! this function is currently not in use
-    def get_stages(self, project_id):
+    def get_stages(self, project_id, user):
+        project = self.get_project(project_id, user) 
         cursor = self.db.connection.cursor()
         cursor.execute(
-            '''SELECT id, project_id, stage_name FROM stages where project_id = id''', (project_id,))
+            '''SELECT id, project_id, stage_name FROM stages where project_id = %s''', (project.id,))
         rows = cursor.fetchall()
         cursor.close()
-        result = []
-        for row in rows:
-            result.append({
-                "stage_id": row[0],
-                "project_id": row[1],
-                "stage_name": row[2]
-            })
-        return result
+        stages = [{"id": row[0], "project_id": row[1], "stage_name": row[2]} for row in rows]  
+        return stages
 
     def get_stage(self, project_id, stage_id):
         cursor = self.db.connection.cursor()

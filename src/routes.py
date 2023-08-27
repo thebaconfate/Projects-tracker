@@ -1,5 +1,5 @@
-from flask import Blueprint, jsonify, make_response, request
-from flask_login import login_required, logout_user
+from flask import Blueprint, jsonify, make_response, request, session
+from flask_login import login_required, logout_user, current_user
 from pytz import timezone
 from classes.errorhandler import ErrorHandler
 from classes.models.User import User
@@ -35,7 +35,6 @@ def index():
 
 
 @bp.post('/register', strict_slashes=False)
-
 def register():
     result = handler.register(request.json)
     return jsonify(result), 200
@@ -55,13 +54,11 @@ def logout():
 
 # * creates the required tables in the database.
 
-def get_user_id():
-    return request.json['user_id']
-
 # * migrates stage(s) from a json file to the database. Also adds the project if it doesn't exist.
 
 
 @bp.post('/migrate/project:<project_name>')
+@login_required
 def migrate_stages(project_name):
     handler.migrate_stages(project_name, request.json)
     return 'migration successful', 200
@@ -69,48 +66,55 @@ def migrate_stages(project_name):
 
 # * migrates all projects and stages from a json file to the database.
 @bp.post('/migrate/projects')
+@login_required
 def migrate_projects():
     handler.migrate_projects(request.json)
     return 'migration successful', 200
 
+
+@bp.post('/create_project')
+@login_required
+def create_project():
+    # * adds a project to the database
+    project = handler.create_project(request.json, current_user)
+    return jsonify(project), 200
+
+
 # * gets all projects names and ids from the database.
-
-
-@bp.get('/user:<id>/projects:all')
+@bp.get('/projects:all')
+@login_required
 def get_projects():
-    results = handler.get_projects()
+    results = handler.get_projects(current_user)
     return results, 200
+
 
 
 # * gets all stages from a project
 @bp.get('/project:<project_id>/stages:all')
+@login_required
 def get_stages(project_id):
-    result = handler.get_project(project_id)
+    result = handler.get_stages(project_id, current_user)
     return result, 200
 
 
-# * gets information about a stage from a project
+@bp.post('/project:<project_id>/create_stage')
+@login_required
+def create_stage(project_id):
+    result = handler.create_stage(request.json, project_id, current_user)
+    return result, 200
+
+
 @bp.route('/project:<project_id>/stage:<stage_id>', methods=['GET'])
+@login_required
 def get_project(project_id, stage_id):
+    # * gets information about a stage from a project
     if request.method == 'GET':
         result = handler.get_stage(project_id, stage_id)
         return result, 200
 
 
-# * adds a project to the database
-@bp.post('/create_project')
-def create_project():
-    handler.create_project(request.json)
-    return 'project added', 200
-
-
-@bp.post('/project:<project_id>/create_stage')
-def create_stage(project_id):
-    handler.create_stage(project_id, request.json)
-    return 'stage added', 200
-
-
 @bp.put('/project:<project_id>/stage:<stage_id>')
+@login_required
 def update_stage(project_id, stage_id):
     # TODO handler.update_stage(project_id, stage_id, request.json)
     # TODO implement this method. It should take a json and update all listed properties.

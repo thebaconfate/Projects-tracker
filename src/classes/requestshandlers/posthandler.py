@@ -2,6 +2,8 @@ from datetime import datetime
 from functools import reduce
 
 from pytz import timezone, utc
+from classes.schemas.projectschema import ProjectSchema
+from classes.schemas.stageschema import StageSchema
 from classes.schemas.userschema import UserSchema
 from classes.requestshandlers.gethandler import GetHandler
 from classes.customerrors.inputerror import InputException
@@ -48,9 +50,6 @@ class Posthandler(GetHandler):
             '''SELECT id, name, email, password FROM users WHERE email = %s''', (user.email,))
         result = cursor.fetchone()
         cursor.close()
-        print(user.password)
-        print(result[3])
-
         try:
             registered_user = schema.load(
                 {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
@@ -61,7 +60,7 @@ class Posthandler(GetHandler):
                 registered_user.password = None
                 return schema.dump(user)
         except Exception as e:
-            raise e
+            raise InputException('invalid credentials')
 
     def logout(self):
         logout_user()
@@ -124,35 +123,58 @@ class Posthandler(GetHandler):
         else:
             raise InputException('invalid project payload')
 
-    def create_project(self, project):
-        project_name = project['name']
+    def create_project(self, payload, user):
+        schema = ProjectSchema()
+        project = schema.load(payload, partial=('id','owner_id'))
         cursor = self.db.connection.cursor()
         cursor.execute(
-            "SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE project_name = %s)", (project_name,))
+            "SELECT id FROM projects WHERE EXISTS (SELECT id FROM projects WHERE name = %s AND owner_id = %s)", (project.name, user.id))
         project_id = cursor.fetchone()
         if project_id is None:
             cursor.execute(
-                '''INSERT INTO projects (project_name) VALUES (%s)''', (project_name,))
+                '''INSERT INTO projects (name, owner_id) VALUES (%s, %s)''', (project.name, user.id))
             self.db.connection.commit()
             cursor.execute(
-                '''SELECT id FROM projects where project_name = %s''', (project_name,))
-            project_id = cursor.fetchone()[0]
-        cursor.close()
-        return project_id
+                '''SELECT id, name FROM projects where name = %s AND owner_id = %s''', (project.name, user.id))
+            query_result = cursor.fetchone()
+            cursor.close()
+            result = {"id": query_result[0], "name": query_result[1], "owner_id": user.id}
+            result = schema.load(result)
+            return schema.dump(result)
+        else:
+            raise InputException('project already exists')
 
-    def create_stage(self, project_id, stage):
-        exists = self.get_project(project_id)
-        if exists is None:
-            raise InputException('Project does not exist')
-        cursor = self.db.connection.cursor()
-        print(stage)
-        try:
-            last_updated = datetime.now(tz=self.standard_tz).astimezone(utc)
-            cursor.execute('''INSERT INTO stages (stage_name, project_id, days,seconds, stage_price, last_updated) VALUES (%s, %s,%s,%s, %s,%s)''',
-                           (stage['name'], project_id, stage['time']['days'], stage['time']['seconds'], stage['price'], last_updated))
-            self.db.connection.commit()
-            print(last_updated)
-            cursor.close()
-        except Exception:
-            cursor.close()
-            raise InputException('Invalid stage payload')
+    def create_stage(self, payload, project_id, user):
+        project = self.get_project(project_id, user)
+        print(payload)
+        print(project)
+        if project is not None:
+            schema = StageSchema()
+            payload['project_id'] = project.id
+            print(payload)
+            payload['last_updated'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            payload['days'] = 0
+            payload['seconds'] = 0
+            print(payload)
+            stage = schema.load(payload, partial=('id', 'price'))
+            print(stage)
+            cursor = self.db.connection.cursor()
+            cursor.execute(
+                "SELECT id FROM stages WHERE EXISTS (SELECT id FROM stages WHERE stage_name = %s AND project_id = %s)", (stage.name, project.id))
+            stage_id = cursor.fetchone()
+            if stage_id is None:
+                print(stage.last_updated)
+                print(stage.get_last_updated())
+                cursor.execute(
+                    '''INSERT INTO stages (stage_name, project_id, days, seconds, stage_price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage.name, stage.project_id, stage.days, stage.seconds, stage.price, stage.get_last_updated()))
+                self.db.connection.commit()
+                cursor.execute(
+                "SELECT id FROM stages WHERE EXISTS (SELECT id FROM stages WHERE stage_name = %s AND project_id = %s)", (stage.name, project.id))
+                stage_id = cursor.fetchone()
+                cursor.close()
+                stage.id = stage_id[0]
+                return schema.dump(stage)
+            else:
+                raise InputException('stage already exists')
+        else: 
+            raise InputException('project does not exist')
