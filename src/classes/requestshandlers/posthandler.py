@@ -151,20 +151,13 @@ class Posthandler(GetHandler):
         if project is not None:
             schema = StageSchema()
             payload['project_id'] = project.id
-            print(payload)
             payload['last_updated'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-            payload['days'] = 0
-            payload['seconds'] = 0
-            print(payload)
-            stage = schema.load(payload, partial=('id', 'price'))
-            print(stage)
+            stage = schema.load(payload, partial=('id', 'days', 'seconds','price'))
             cursor = self.db.connection.cursor()
             cursor.execute(
                 "SELECT id FROM stages WHERE EXISTS (SELECT id FROM stages WHERE stage_name = %s AND project_id = %s)", (stage.name, project.id))
             stage_id = cursor.fetchone()
             if stage_id is None:
-                print(stage.last_updated)
-                print(stage.get_last_updated())
                 cursor.execute(
                     '''INSERT INTO stages (stage_name, project_id, days, seconds, stage_price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage.name, stage.project_id, stage.days, stage.seconds, stage.price, stage.get_last_updated()))
                 self.db.connection.commit()
