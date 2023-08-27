@@ -48,18 +48,23 @@ class Posthandler(GetHandler):
             '''SELECT id, name, email, password FROM users WHERE email = %s''', (user.email,))
         result = cursor.fetchone()
         cursor.close()
-        registered_user = schema.load(
-            {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
-        if result is not None and registered_user.check_password(user.password):
-            login_user(registered_user)
-            registered_user.password = None
-            return schema.dump(user)
-        else:
-            raise InputException('invalid credentials')
-        
+        print(user.password)
+        print(result[3])
+
+        try:
+            registered_user = schema.load(
+                {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
+            print(registered_user)
+            print(registered_user.check_password(user.password))
+            if registered_user.check_password(user.password):
+                login_user(registered_user)
+                registered_user.password = None
+                return schema.dump(user)
+        except Exception as e:
+            raise e
+
     def logout(self):
         logout_user()
-        
 
     def __verify_stages_payload(self, payload):
         result = False

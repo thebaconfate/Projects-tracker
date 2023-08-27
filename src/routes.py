@@ -9,11 +9,14 @@ from setup import db, tz, login_manager
 bp = Blueprint('auth', __name__)
 handler = Requesthandler(db, tz)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return handler.fetch_user(user_id)
 
 # * error handler for error codes.
+
+
 @bp.errorhandler(Exception)
 def internal_server_error(e):
     return ErrorHandler().handle(e)
@@ -32,31 +35,28 @@ def index():
 
 
 @bp.post('/register', strict_slashes=False)
+
 def register():
     result = handler.register(request.json)
-    # TODO implement this method. It should take a username and password and return a token.
-    return result, 200
+    return jsonify(result), 200
+
 
 @bp.post('/login/', strict_slashes=False)
 def login():
     result = handler.login(request.json)
-    # TODO implement this method. It should take a username and password and return a token.
-    return result, 200
+    return jsonify(result), 200
+
 
 @bp.route('/logout/', strict_slashes=False)
 @login_required
 def logout():
     handler.logout()
-    return 'logged out', 200
+    return jsonify({"msg": "logged user out"}), 200
 
 # * creates the required tables in the database.
 
-
-@bp.get('/init_tables')
-def init_tables():
-    print('init tables')
-    handler.init_tables()
-    return 'done', 200
+def get_user_id():
+    return request.json['user_id']
 
 # * migrates stage(s) from a json file to the database. Also adds the project if it doesn't exist.
 
