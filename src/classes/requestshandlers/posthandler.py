@@ -5,7 +5,7 @@ from pytz import timezone, utc
 from classes.schemas.userschema import UserSchema
 from classes.requestshandlers.gethandler import GetHandler
 from classes.customerrors.inputerror import InputException
-from flask_login import login_user
+from flask_login import login_user, logout_user
 
 
 '''class to delegate requests that add, and update data.'''
@@ -51,8 +51,15 @@ class Posthandler(GetHandler):
         registered_user = schema.load(
             {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
         if result is not None and registered_user.check_password(user.password):
-            print('logged_in')
-        return schema.dump(user)
+            login_user(registered_user)
+            registered_user.password = None
+            return schema.dump(user)
+        else:
+            raise InputException('invalid credentials')
+        
+    def logout(self):
+        logout_user()
+        
 
     def __verify_stages_payload(self, payload):
         result = False

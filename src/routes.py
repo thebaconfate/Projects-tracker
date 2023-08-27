@@ -1,12 +1,17 @@
 from flask import Blueprint, jsonify, make_response, request
+from flask_login import login_required, logout_user
 from pytz import timezone
 from classes.errorhandler import ErrorHandler
+from classes.models.User import User
 from classes.requesthandler import Requesthandler
-from setup import db, tz
+from setup import db, tz, login_manager
 
 bp = Blueprint('auth', __name__)
 handler = Requesthandler(db, tz)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return handler.fetch_user(user_id)
 
 # * error handler for error codes.
 @bp.errorhandler(Exception)
@@ -23,7 +28,7 @@ def internal_server_error_500(e):
 
 @bp.route('/')
 def index():
-    return 'hello world'
+    return jsonify({'msg': 'hello world'}), 200
 
 
 @bp.post('/register', strict_slashes=False)
@@ -36,7 +41,13 @@ def register():
 def login():
     result = handler.login(request.json)
     # TODO implement this method. It should take a username and password and return a token.
-    return 'login successful', 200
+    return result, 200
+
+@bp.route('/logout/', strict_slashes=False)
+@login_required
+def logout():
+    handler.logout()
+    return 'logged out', 200
 
 # * creates the required tables in the database.
 

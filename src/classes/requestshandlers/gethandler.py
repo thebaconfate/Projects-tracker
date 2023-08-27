@@ -4,12 +4,25 @@
 
 from classes.models.User import User
 from classes.schemas.projectschema import ProjectSchema
+from classes.schemas.userschema import UserSchema 
 
 
 class GetHandler():
 
     def __init__(self, db):
         self.db = db
+
+    def fetch_user(self, user_id):
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            '''SELECT id, name, email, password FROM users WHERE id = %s''', (user_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        if result is not None:
+            schema = UserSchema()
+            return schema.load({"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
+        else:
+            return None
 
     def get_projects(self, user: User):
         cursor = self.db.connection.cursor()
