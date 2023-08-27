@@ -40,10 +40,18 @@ class Posthandler(GetHandler):
             login_user(user)
             return schema.dump(user)
 
-    def login_user(self, payload):
+    def login(self, payload):
         schema = UserSchema()
-        user = schema.load(payload)
-        user.rehash_password()
+        user = schema.load(payload, partial=('id', 'name'))
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            '''SELECT id, name, email, password FROM users WHERE email = %s''', (user.email,))
+        result = cursor.fetchone()
+        cursor.close()
+        registered_user = schema.load(
+            {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
+        if result is not None and registered_user.check_password(user.password):
+            print('logged_in')
         return schema.dump(user)
 
     def __verify_stages_payload(self, payload):

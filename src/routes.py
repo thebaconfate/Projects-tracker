@@ -34,7 +34,7 @@ def register():
 
 @bp.post('/login/', strict_slashes=False)
 def login():
-    # result = handler.login(request.json)
+    result = handler.login(request.json)
     # TODO implement this method. It should take a username and password and return a token.
     return 'login successful', 200
 

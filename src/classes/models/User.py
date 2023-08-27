@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from setup import bcrypt
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(UserMixin):
 
@@ -15,3 +15,6 @@ class User(UserMixin):
 
     def hash_password(self):
         self.password = bcrypt.generate_password_hash(self.password)
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password, password)
