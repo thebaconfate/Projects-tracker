@@ -4,7 +4,7 @@ from setup import bcrypt
 
 class User(UserMixin):
 
-    def __init__(self, id, name, email, password):
+    def __init__(self, password, email=None, id=None, name=None, ):
         self.id = id
         self.name = name
         self.email = email
@@ -13,5 +13,5 @@ class User(UserMixin):
     def __repr__(self):
         return '<User(id={self.id!r}, name={self.name!r})>'.format(self=self)
 
-    def rehash_password(self):
+    def hash_password(self):
         self.password = bcrypt.generate_password_hash(self.password)

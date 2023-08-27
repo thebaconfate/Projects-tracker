@@ -2,16 +2,16 @@ from flask import Blueprint, jsonify, make_response, request
 from pytz import timezone
 from classes.errorhandler import ErrorHandler
 from classes.requesthandler import Requesthandler
-from setup import db
+from setup import db, tz
 
 bp = Blueprint('auth', __name__)
-handler = Requesthandler(db, timezone('Europe/Brussels'))
+handler = Requesthandler(db, tz)
 
+
+# * error handler for error codes.
 @bp.errorhandler(Exception)
 def internal_server_error(e):
     return ErrorHandler().handle(e)
-
-# * error handler for error codes.
 
 
 @bp.errorhandler(500)
@@ -20,9 +20,17 @@ def internal_server_error_500(e):
         'msg': 'unknown internal server error'
     }), 500)
 
+
 @bp.route('/')
 def index():
     return 'hello world'
+
+
+@bp.post('/register', strict_slashes=False)
+def register():
+    result = handler.register(request.json)
+    # TODO implement this method. It should take a username and password and return a token.
+    return result, 200
 
 @bp.post('/login/', strict_slashes=False)
 def login():

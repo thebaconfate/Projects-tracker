@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_mysqldb import MySQL
+from pytz import timezone
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -16,6 +17,7 @@ db = MySQL()
 migrate = Migrate()
 bcrypt = Bcrypt()
 start_files = None
+tz = timezone('Europe/Brussels')
 
 
 

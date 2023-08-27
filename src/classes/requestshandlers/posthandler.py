@@ -5,6 +5,7 @@ from pytz import timezone, utc
 from classes.schemas.userschema import UserSchema
 from classes.requestshandlers.gethandler import GetHandler
 from classes.customerrors.inputerror import InputException
+from flask_login import login_user
 
 
 '''class to delegate requests that add, and update data.'''
@@ -16,6 +17,28 @@ class Posthandler(GetHandler):
         self.db = db
         self.timezone = standard_tz
     # verifies the structure of the payload
+
+    def register(self, payload):
+        schema = UserSchema()
+        user = schema.load(payload, partial=('id',))
+        user.hash_password()
+        self.db.connection.cursor()
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            "SELECT id FROM users WHERE EXISTS (SELECT id FROM users WHERE email = %s)", (user.email,))
+        if cursor.fetchone() is not None:
+            cursor.close()
+            raise InputException('user already exists')
+        else:
+            cursor.execute('''INSERT INTO users (name, email, password) VALUES (%s, %s, %s)''',
+                           (user.name, user.email, user.password))
+            self.db.connection.commit()
+            cursor.execute(
+                '''SELECT id FROM users WHERE email = %s''', (user.email,))
+            user.id = cursor.fetchone()[0]
+            cursor.close()
+            login_user(user)
+            return schema.dump(user)
 
     def login_user(self, payload):
         schema = UserSchema()
@@ -31,8 +54,6 @@ class Posthandler(GetHandler):
                     return False
             result = True
         return result
-    
-    
 
     def _verify_projects_payload(self, payload):
         result = False
