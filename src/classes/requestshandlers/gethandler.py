@@ -2,24 +2,24 @@
 ''' class to delegate requests that fetch data to.'''
 
 
+from classes.models.User import User
+from classes.schemas.projectschema import ProjectSchema
+
+
 class GetHandler():
 
     def __init__(self, db):
         self.db = db
 
-    def get_projects(self):
+    def get_projects(self, user: User):
         cursor = self.db.connection.cursor()
-        query = "SELECT * FROM projects"
-        cursor.execute(query)
+        cursor.execute("SELECT * FROM projects where owner_id = %s", (user.id,))
         projects = cursor.fetchall()
         cursor.close()
-        results = []
-        for i in range(0, len(projects)):
-            results.append({
-                "project_id": projects[i][0],
-                "project_name": projects[i][1]
-            })
-        return results
+        parsed_projects = [{"id": project[0], "name":project[1] , "owner_id": project[2]} for project in projects]
+        schema = ProjectSchema(many=True)
+        results = schema.load(parsed_projects)
+        return schema.dump(results)
 
     def get_project(self, project_id):
         cursor = self.db.connection.cursor()

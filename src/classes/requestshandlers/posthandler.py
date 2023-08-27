@@ -2,8 +2,9 @@ from datetime import datetime
 from functools import reduce
 
 from pytz import timezone, utc
-from src.classes.requestshandlers.gethandler import GetHandler
-from src.classes.customerrors.inputerror import InputException
+from classes.schemas.userschema import UserSchema
+from classes.requestshandlers.gethandler import GetHandler
+from classes.customerrors.inputerror import InputException
 
 
 '''class to delegate requests that add, and update data.'''
@@ -16,6 +17,12 @@ class Posthandler(GetHandler):
         self.timezone = standard_tz
     # verifies the structure of the payload
 
+    def login_user(self, payload):
+        schema = UserSchema()
+        user = schema.load(payload)
+        user.rehash_password()
+        return schema.dump(user)
+
     def __verify_stages_payload(self, payload):
         result = False
         if isinstance(payload, list):
@@ -24,6 +31,8 @@ class Posthandler(GetHandler):
                     return False
             result = True
         return result
+    
+    
 
     def _verify_projects_payload(self, payload):
         result = False

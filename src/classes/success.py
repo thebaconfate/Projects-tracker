@@ -1,5 +1,5 @@
 
-from src.classes.troubleshooter import Troubleshooter
+from .troubleshooter import Troubleshooter
 
 
 class Success(Troubleshooter):

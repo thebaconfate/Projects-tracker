@@ -1,7 +1,10 @@
-from src.classes.customerrors.inputerror import InputException
+from classes.customerrors.inputerror import InputException
+
 
 
 ''' class to handle put requests'''
+
+
 
 
 class Puthandler():
@@ -24,7 +27,7 @@ class Puthandler():
     def update_stage(self, project_id, stage_id, payload):
         # TODO implement this
         pass
-    
+
     def switch_project(self, key, value):
         # TODO implement switch project
         match key:
@@ -32,7 +35,7 @@ class Puthandler():
                 pass
             case _:
                 raise InputException('invalid payload to update project')
-            
+
     def update_project(self, project_id, payload):
         # TODO implement this
         pass

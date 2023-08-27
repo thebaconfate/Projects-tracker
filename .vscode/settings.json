@@ -13,6 +13,7 @@
 		"jsonify",
 		"mysqldb",
 		"Posthandler",
+		"projectschema",
 		"pytz",
 		"Requesthandler",
 		"requestshandlers",

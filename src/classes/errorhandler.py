@@ -1,5 +1,5 @@
 from flask import jsonify, make_response
-from src.classes.customerrors.inputerror import InputException
+from classes.customerrors.inputerror import InputException
 
 class ErrorHandler():
 
