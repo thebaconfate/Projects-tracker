@@ -113,18 +113,6 @@ def get_stage(project_id, stage_id):
         result = handler.update_stage(project_id, stage_id, request.json, current_user)
         return result, 200
 
-
-@bp.put('/project:<project_id>/stage:<stage_id>')
-@login_required
-def update_stage(project_id, stage_id):
-    # TODO handler.update_stage(project_id, stage_id, request.json)
-    # TODO implement this method. It should take a json and update all listed properties.
-    # TODO Implement a route that allows the user to rename a stage in the database.
-    # TODO Implement a route that allows the user to update a price of a stage in the database
-    # TODO implement a route that allows the user to update the days & hours spent on a stage. This should automatically update the last update value of the stage.
-    return 'stage updated', 200
-
-
 @bp.put('/project:<project_id>')
 def update_project(project_id):
     # TODO handler.update_project(project_id, request.json)
