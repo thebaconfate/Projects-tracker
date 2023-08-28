@@ -71,8 +71,6 @@ class GetHandler():
         row = cursor.fetchone()
         cursor.close()
         if row is not None:
-            print(row[6])
-            print(type(row[6]))
             stagedct = {"id": row[0], "name": row[1], "project_id": row[2], "days": row[3],
                      "seconds": row[4], "price": row[5], "last_updated": row[6].replace(tzinfo=UTC).strftime('%Y-%m-%d %H:%M:%S%z')}
             print(stagedct)

@@ -6,7 +6,7 @@ from pytz import UTC, timezone
 
 class Stage():
 
-    def __init__(self, name, project_id, id=None, price=0, days=0, seconds=0, last_updated=None):
+    def __init__(self, project_id=None, name=None, id=None, price=0, days=0, seconds=0, last_updated=None):
         self.id = id
         self.name = name
         self.project_id = project_id

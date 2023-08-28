@@ -1,8 +1,6 @@
-from flask import Blueprint, jsonify, make_response, request, session
-from flask_login import login_required, logout_user, current_user
-from pytz import timezone
+from flask import Blueprint, jsonify, make_response, request
+from flask_login import login_required, current_user
 from classes.errorhandler import ErrorHandler
-from classes.models.User import User
 from classes.requesthandler import Requesthandler
 from setup import db, tz, login_manager
 
@@ -104,12 +102,16 @@ def create_stage(project_id):
     return result, 200
 
 
-@bp.route('/project:<project_id>/stage:<stage_id>', methods=['GET'])
+@bp.route('/project:<project_id>/stage:<stage_id>', methods=['GET', 'PUT'])
 @login_required
 def get_stage(project_id, stage_id):
     # * gets information about a stage from a project
-    result = handler.get_stage(project_id, stage_id, current_user)
-    return result, 200
+    if request.method == 'GET':
+        result = handler.get_stage(project_id, stage_id, current_user)
+        return result, 200
+    elif request.method == 'PUT':
+        result = handler.update_stage(project_id, stage_id, request.json, current_user)
+        return result, 200
 
 
 @bp.put('/project:<project_id>/stage:<stage_id>')
