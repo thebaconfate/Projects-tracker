@@ -115,8 +115,7 @@ def get_stage(project_id, stage_id):
 
 @bp.put('/project:<project_id>')
 def update_project(project_id):
-    # TODO handler.update_project(project_id, request.json)
-    # TODO implement this method. It should take a json and rename the project.
+    handler.update_project(project_id, request.json, current_user)
     return 'project updated', 200
 
 
