@@ -106,11 +106,10 @@ def create_stage(project_id):
 
 @bp.route('/project:<project_id>/stage:<stage_id>', methods=['GET'])
 @login_required
-def get_project(project_id, stage_id):
+def get_stage(project_id, stage_id):
     # * gets information about a stage from a project
-    if request.method == 'GET':
-        result = handler.get_stage(project_id, stage_id)
-        return result, 200
+    result = handler.get_stage(project_id, stage_id, current_user)
+    return result, 200
 
 
 @bp.put('/project:<project_id>/stage:<stage_id>')

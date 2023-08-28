@@ -53,8 +53,6 @@ class Posthandler(GetHandler):
         try:
             registered_user = schema.load(
                 {"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
-            print(registered_user)
-            print(registered_user.check_password(user.password))
             if registered_user.check_password(user.password):
                 login_user(registered_user)
                 registered_user.password = None
@@ -107,7 +105,7 @@ class Posthandler(GetHandler):
                 print(last_updated)
                 stage_seconds = stage['time']['seconds']
                 stage_days = stage['time']['days']
-                cursor.execute('''INSERT INTO stages (stage_name, project_id, days, seconds, stage_price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (
+                cursor.execute('''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (
                     stage['name'], project_id, stage_days, stage_seconds, stage['price'], last_updated))
             self.db.connection.commit()
             cursor.close()
@@ -146,12 +144,10 @@ class Posthandler(GetHandler):
 
     def create_stage(self, payload, project_id, user):
         project = self.get_project(project_id, user)
-        print(payload)
-        print(project)
         if project is not None:
             schema = StageSchema()
             payload['project_id'] = project.id
-            payload['last_updated'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            payload['last_updated'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S%z')
             stage = schema.load(payload, partial=('id', 'days', 'seconds','price'))
             cursor = self.db.connection.cursor()
             cursor.execute(
@@ -159,7 +155,7 @@ class Posthandler(GetHandler):
             stage_id = cursor.fetchone()
             if stage_id is None:
                 cursor.execute(
-                    '''INSERT INTO stages (stage_name, project_id, days, seconds, stage_price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage.name, stage.project_id, stage.days, stage.seconds, stage.price, stage.get_last_updated()))
+                    '''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage.name, stage.project_id, stage.days, stage.seconds, stage.price, stage.get_last_updated()))
                 self.db.connection.commit()
                 cursor.execute(
                 "SELECT id FROM stages WHERE EXISTS (SELECT id FROM stages WHERE stage_name = %s AND project_id = %s)", (stage.name, project.id))
