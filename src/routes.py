@@ -114,12 +114,14 @@ def get_stage(project_id, stage_id):
         return result, 200
 
 @bp.put('/project:<project_id>')
+@login_required
 def update_project(project_id):
     handler.update_project(project_id, request.json, current_user)
     return 'project updated', 200
 
 
 @bp.delete('/project:<project_id>/stage:<stage_id>')
+@login_required
 def delete_stage(project_id, stage_id):
     # TODO handler.delete_stage(project_id, stage_id)
     # TODO implement this method. It should delete the stage from the database.
@@ -127,6 +129,7 @@ def delete_stage(project_id, stage_id):
 
 
 @bp.delete('/project:<project_id>')
+@login_required
 def delete_project(project_id):
     # TODO handler.delete_project(project_id)
     # TODO implement this method. It should delete the project from the database.
