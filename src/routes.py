@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, make_response, request
 from flask_login import login_required, current_user
 from classes.errorhandler import ErrorHandler
 from classes.requesthandler import Requesthandler
-from extensions import db, tz, login_manager
+from extensions import login_manager, tz
+from extensions import dbinterface as db
 
 bp = Blueprint('auth', __name__)
 handler = Requesthandler(db, tz)
@@ -74,8 +75,8 @@ def migrate_projects():
 @login_required
 def create_project():
     # * adds a project to the database
-    project = handler.create_project(request.json, current_user)
-    return jsonify(project), 200
+    handler.create_project(request.json, current_user)
+    return jsonify('added project'), 200
 
 
 # * gets all projects names and ids from the database.
@@ -97,8 +98,8 @@ def get_stages(project_id):
 @bp.post('/project:<project_id>/create_stage')
 @login_required
 def create_stage(project_id):
-    result = handler.create_stage(request.json, project_id, current_user)
-    return result, 200
+    handler.create_stage(request.json, project_id, current_user)
+    return jsonify('stage_added'), 200
 
 
 @bp.route('/project:<project_id>/stage:<stage_id>', methods=['GET', 'PUT'])

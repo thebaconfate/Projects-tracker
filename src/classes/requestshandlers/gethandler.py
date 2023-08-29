@@ -16,64 +16,57 @@ class GetHandler():
         self.db = db
 
     def fetch_user(self, user_id):
-        cursor = self.db.connection.cursor()
-        cursor.execute(
-            '''SELECT id, name, email, password FROM users WHERE id = %s''', (user_id,))
-        result = cursor.fetchone()
-        cursor.close()
-        if result is not None:
+        retrieved_user = self.db.get_user(user_id)
+        if retrieved_user is not None:
             schema = UserSchema()
-            return schema.load({"id": result[0], "name": result[1], "email": result[2], "password": result[3]})
+            return schema.load({
+                "id": retrieved_user[0],
+                "name": retrieved_user[1],
+                "email": retrieved_user[2],
+                "password": retrieved_user[3]
+            })
         else:
             return None
 
     def get_projects(self, user):
-        cursor = self.db.connection.cursor()
-        cursor.execute(
-            "SELECT id, name FROM projects where owner_id = %s", (user.id,))
-        projects = cursor.fetchall()
-        cursor.close()
-        parsed_projects = [{"id": project[0], "name":project[1],
-                            "owner_id": user.id} for project in projects]
-        schema = ProjectSchema(many=True)
-        results = schema.load(parsed_projects)
-        return schema.dump(results)
+        retrieved_projects = self.db.get_projects(user.id)
+        projects = [{
+            "id": project[0],
+            "name": project[1]
+        } for project in retrieved_projects]
+        return projects
 
     def get_project(self, project_id, user):
-        schema = ProjectSchema()
-        project = schema.load(
-            {"id": project_id, "owner_id": user.id}, partial=('name',))
-        cursor = self.db.connection.cursor()
-        cursor.execute(
-            '''SELECT * from projects WHERE id = %s AND owner_id = %s''', (project.id, project.owner_id))
-        rows = cursor.fetchone()
-        cursor.close()
-        return schema.load({"id": rows[0], "name": rows[1], "owner_id": rows[2]})
+        retrieved_project = self.db.get_project(project_id, user.id)
+        project = {
+            "id": retrieved_project[0],
+            "name": retrieved_project[1]
+        }
+        return project
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
-        cursor = self.db.connection.cursor()
-        cursor.execute(
-            '''SELECT stages.id, project_id, stage_name, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user.id))
-        rows = cursor.fetchall()
-        cursor.close()
-        if rows is not None:
-            stages = [{"id": row[0], "project_id": row[1],
-                       "stage_name": row[2], "last_updated": row[3]} for row in rows]
-            return stages
-        else:
-            raise InputException('no stages found')
+        retrieved_stages = self.db.get_stages(project_id, user.id)
+        stages = [{
+            "id": retrieved_stage[0],
+            "name": retrieved_stage[1],
+            "project_id": retrieved_stage[2],
+            "days": retrieved_stage[3],
+            "seconds": retrieved_stage[4],
+            "price": retrieved_stage[5],
+            "last_updated": retrieved_stage[6].replace(tzinfo=UTC).strftime('%Y-%m-%d %H:%M:%S%z')
+        } for retrieved_stage in retrieved_stages]
+        return stages
 
     def get_stage(self, project_id, stage_id, user):
-        cursor = self.db.connection.cursor()
-        cursor.execute(
-            '''SELECT stages.id, stage_name, project_id, days, seconds, price, last_updated  FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.id = %s AND projects.id = %s and users.id = %s ;''', (stage_id, project_id, user.id))
-        row = cursor.fetchone()
-        cursor.close()
-        if row is not None:
-            stagedct = {"id": row[0], "name": row[1], "project_id": row[2], "days": row[3],
-                     "seconds": row[4], "price": row[5], "last_updated": row[6].replace(tzinfo=UTC).strftime('%Y-%m-%d %H:%M:%S%z')}
-            print(stagedct)
-            schema = StageSchema()
-            stage = schema.load(stagedct)
-            return schema.dump(stage)
+        retrieved_stage = self.db.get_stage(project_id, stage_id, user.id)
+        stage = {
+            "id": retrieved_stage[0],
+            "name": retrieved_stage[1],
+            "project_id": retrieved_stage[2],
+            "days": retrieved_stage[3],
+            "seconds": retrieved_stage[4],
+            "price": retrieved_stage[5],
+            "last_updated": retrieved_stage[6].replace(tzinfo=UTC).strftime('%Y-%m-%d %H:%M:%S%z')
+        }
+        return stage

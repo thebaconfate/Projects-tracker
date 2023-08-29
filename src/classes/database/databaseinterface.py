@@ -1,10 +1,7 @@
-from setup import db
-
-
 class DatabaseInterface():
 
-    def __init__(self):
-        self.db = db
+    def __init__(self, database):
+        self.db = database
 
     '''ALL INSERT QUERIES'''
 
@@ -49,6 +46,15 @@ class DatabaseInterface():
         cursor.close()
         return project
 
+    def get_project_by_name(self, project_name, user_id):
+        cursor = self.db.connection.cursor()
+        cursor.execute('''
+            SELECT id FROM projects where owner_id = %s AND name = %s;
+        ''', (user_id, project_name))
+        project = cursor.fetchone()
+        cursor.close()
+        return project
+
     def get_user(self, user_id):
         cursor = self.db.connection.cursor()
         cursor.execute(
@@ -57,9 +63,17 @@ class DatabaseInterface():
         cursor.close()
         return user
 
+    def get_user_by_mail(self, email):
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            '''SELECT id, name, email, password FROM users WHERE email = %s''', (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        return user
+
     def get_stages(self, project_id, user_id):
         cursor = self.db.connection.cursor()
-        cursor.execute('''SELECT stages.id, project_id, stage_name, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
+        cursor.execute('''SELECT stages.id, stage_name, project_id, days, seconds, price, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
         stages = cursor.fetchall()
         cursor.close()
         return stages
@@ -67,6 +81,13 @@ class DatabaseInterface():
     def get_stage(self, stage_id, project_id, user_id):
         cursor = self.db.connection.cursor()
         cursor.execute('''SELECT stages.id, stage_name, project_id, days, seconds, price, last_updated  FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.id = %s AND projects.id = %s and users.id = %s ;''', (stage_id, project_id, user_id))
+        stage = cursor.fetchone()
+        cursor.close()
+        return stage
+
+    def get_stage_by_name(self, stage_name, project_id, user_id):
+        cursor = self.db.connection.cursor()
+        cursor.execute('''SELECT stages.id FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stage_name = %s AND projects.id = %s and users.id = %s ;''', (stage_name, project_id, user_id))
         stage = cursor.fetchone()
         cursor.close()
         return stage
