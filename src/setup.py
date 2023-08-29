@@ -1,24 +1,14 @@
 import os
-
+from routes import bp
 from dotenv import load_dotenv
 from flask import Flask
-from flask_bcrypt import Bcrypt
-from flask_login import LoginManager
-from flask_migrate import Migrate
-from flask_mysqldb import MySQL
-from pytz import timezone
+from extensions import login_manager
+from extensions import db, bcrypt
 
-login_manager = LoginManager()
 login_manager.session_protection = "strong"
 login_manager.login_view = "login"
 login_manager.login_message_category = "info"
-
-db = MySQL()
-migrate = Migrate()
-bcrypt = Bcrypt()
 start_files = None
-tz = timezone('Europe/Brussels')
-
 
 
 def create_app(testing=True):
@@ -39,4 +29,5 @@ def create_app(testing=True):
     db.init_app(app)
     # migrate.init_app(app, db)
     bcrypt.init_app(app)
+    app.register_blueprint(bp)
     return app

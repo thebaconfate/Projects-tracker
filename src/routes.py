@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, make_response, request
 from flask_login import login_required, current_user
 from classes.errorhandler import ErrorHandler
 from classes.requesthandler import Requesthandler
-from setup import db, tz, login_manager
+from extensions import db, tz, login_manager
 
 bp = Blueprint('auth', __name__)
 handler = Requesthandler(db, tz)
@@ -86,7 +86,6 @@ def get_projects():
     return results, 200
 
 
-
 # * gets all stages from a project
 @bp.get('/project:<project_id>/stages:all')
 @login_required
@@ -110,8 +109,10 @@ def get_stage(project_id, stage_id):
         result = handler.get_stage(project_id, stage_id, current_user)
         return result, 200
     elif request.method == 'PUT':
-        result = handler.update_stage(project_id, stage_id, request.json, current_user)
+        result = handler.update_stage(
+            project_id, stage_id, request.json, current_user)
         return result, 200
+
 
 @bp.put('/project:<project_id>')
 @login_required
