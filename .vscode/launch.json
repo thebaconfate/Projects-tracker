@@ -16,6 +16,14 @@
 			"args": ["run", "--debug", "--reload"],
 			"jinja": false,
 			"justMyCode": true
+		},
+		{
+			"name": "Python: Flask-test",
+			"type": "python",
+			"request": "launch",
+			"module": "pytest",
+			"args": ["src"],
+			"justMyCode": true
 		}
 	]
 }

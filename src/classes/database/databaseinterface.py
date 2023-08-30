@@ -73,7 +73,7 @@ class DatabaseInterface():
 
     def get_stages(self, project_id, user_id):
         cursor = self.db.connection.cursor()
-        cursor.execute('''SELECT stages.id, stage_name, project_id, days, seconds, price, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
+        cursor.execute('''SELECT stages.id, stage_name, project_id, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
         stages = cursor.fetchall()
         cursor.close()
         return stages
@@ -177,7 +177,7 @@ class DatabaseInterface():
         self.db.connection.commit()
         cursor.close()
 
-    def delete_user(self, stage_id):
+    def delete_stage(self, stage_id):
         cursor = self.db.connection.cursor()
         cursor.execute('''DELETE FROM stages WHERE id = %s''', (stage_id,))
         self.db.connection.commit()
