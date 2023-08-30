@@ -177,7 +177,7 @@ class DatabaseInterface():
         self.db.connection.commit()
         cursor.close()
 
-    def delete_user(self, stage_id):
+    def delete_stage(self, stage_id):
         cursor = self.db.connection.cursor()
         cursor.execute('''DELETE FROM stages WHERE id = %s''', (stage_id,))
         self.db.connection.commit()

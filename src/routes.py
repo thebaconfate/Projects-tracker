@@ -2,8 +2,8 @@ from flask import Blueprint, jsonify, make_response, request
 from flask_login import login_required, current_user
 from .classes.errorhandler import ErrorHandler
 from .classes.requesthandler import Requesthandler
-from .extensions import login_manager, tz
-from .extensions import dbinterface as db
+from .setup import login_manager, tz
+from .setup import dbinterface as db
 
 bp = Blueprint('auth', __name__)
 handler = Requesthandler(db, tz)

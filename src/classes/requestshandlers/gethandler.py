@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pytz import UTC
 from ..customerrors.inputerror import InputException
-from ..models.User import User
+from ..models.user import User
 from ..schemas.projectschema import ProjectSchema
 from ..schemas.stageschema import StageSchema
 from ..schemas.userschema import UserSchema

@@ -2,7 +2,7 @@ import os
 from .routes import bp
 from dotenv import load_dotenv
 from flask import Flask
-from .extensions import login_manager, db, bcrypt
+from .setup import login_manager, db, bcrypt
 
 login_manager.session_protection = "strong"
 login_manager.login_view = "login"
