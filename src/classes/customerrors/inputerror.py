@@ -1,5 +1,5 @@
 
-from classes.customerrors.customerror import CustomError
+from .customerror import CustomError
 
 
 class InputException(CustomError): 

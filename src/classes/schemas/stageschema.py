@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, post_load
-from classes.models.stage import Stage
+from ..models.stage import Stage
 from datetime import datetime
 from pytz import timezone, utc
 

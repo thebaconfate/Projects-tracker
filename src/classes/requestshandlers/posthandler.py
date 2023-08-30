@@ -2,11 +2,11 @@ from datetime import datetime
 from functools import reduce
 
 from pytz import timezone, utc
-from classes.schemas.projectschema import ProjectSchema
-from classes.schemas.stageschema import StageSchema
-from classes.schemas.userschema import UserSchema
-from classes.requestshandlers.gethandler import GetHandler
-from classes.customerrors.inputerror import InputException
+from ..schemas.projectschema import ProjectSchema
+from ..schemas.stageschema import StageSchema
+from ..schemas.userschema import UserSchema
+from ..requestshandlers.gethandler import GetHandler
+from ..customerrors.inputerror import InputException
 from flask_login import login_user, logout_user
 
 
@@ -21,13 +21,16 @@ class Posthandler(GetHandler):
 
     def register(self, payload):
         schema = UserSchema()
-        user = schema.load(payload, partial=('id',))
+        user = schema.load(payload, partial=('id', 'name'))
+        print(user)
         retrieved_user = self.db.get_user_by_mail(user.email)
+        print(retrieved_user)
         if retrieved_user is None:
             user.hash_password()
             self.db.insert_user(user.name, user.email, user.password)
             retrieved_user = self.db.get_user_by_mail(user.email)
             user.id = retrieved_user[0]
+            print(user)
             login_user(user)
         else:
             raise InputException('user already exists')

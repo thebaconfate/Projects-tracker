@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import logging
-from classes.customerrors.inputerror import InputException
-from classes.schemas.stageschema import StageSchema
+from ..customerrors.inputerror import InputException
+from ..schemas.stageschema import StageSchema
 
 
 ''' class to handle put requests'''

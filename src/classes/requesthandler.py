@@ -1,9 +1,8 @@
-from pytz import timezone
-from classes.requestshandlers.delhandler import Delhandler
-from classes.requestshandlers.gethandler import GetHandler
-from classes.requestshandlers.inithandler import Inithandler
-from classes.requestshandlers.posthandler import Posthandler
-from classes.requestshandlers.puthandler import Puthandler
+from .requestshandlers.delhandler import Delhandler
+from .requestshandlers.gethandler import GetHandler
+from .requestshandlers.inithandler import Inithandler
+from .requestshandlers.posthandler import Posthandler
+from .requestshandlers.puthandler import Puthandler
 
 ''' main requests handler class'''
 
