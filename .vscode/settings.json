@@ -1,8 +1,26 @@
 {
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8"
-  },
-  "python.formatting.provider": "none",
-  "activestate.promptRuntimeCreation": false,
-  "cSpell.words": ["workhours"]
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.autopep8"
+	},
+	"python.formatting.provider": "none",
+	"activestate.promptRuntimeCreation": false,
+	"cSpell.words": [
+		"customerror",
+		"customerrors",
+		"dotenv",
+		"gethandler",
+		"inputerror",
+		"jsonify",
+		"mysqldb",
+		"Posthandler",
+		"projectschema",
+		"pytz",
+		"Requesthandler",
+		"requestshandlers",
+		"workhours"
+	],
+	"python.analysis.extraPaths": ["./src"],
+	"python.testing.pytestArgs": ["tests"],
+	"python.testing.unittestEnabled": false,
+	"python.testing.pytestEnabled": true
 }

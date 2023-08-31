@@ -6,7 +6,7 @@ run `python3 -m venv <name of virtual environment>`
 
 #### 2. Activate virtual environment
 
-run `<name of virtual environment>/bin/activate`
+run `<name of virtual environment>/Scripts/activate`
 
 #### 2. Install dependencies
 
