@@ -1,6 +1,6 @@
+import pytest
 from datetime import datetime
 from unittest.mock import Mock
-import pytest
 from src.classes.requestshandlers.inithandler import Inithandler
 from src.classes.requestshandlers.posthandler import Posthandler
 from src.classes.requestshandlers.puthandler import Puthandler
