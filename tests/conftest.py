@@ -21,11 +21,6 @@ test_pass = 'test_password'
 hashed_test_pass = bcrypt.generate_password_hash(test_pass)
 
 
-test_user_name = 'test_name'
-test_user_email = "test_user@"
-test_pass = 'test_password'
-hashed_test_pass = bcrypt.hash_password(test_pass)
-
 @pytest.fixture()
 def app():
     app = create_app({
