@@ -2,11 +2,11 @@ from datetime import datetime
 from functools import reduce
 
 from pytz import timezone, utc
-from ..schemas.projectschema import ProjectSchema
-from ..schemas.stageschema import StageSchema
-from ..schemas.userschema import UserSchema
-from ..requestshandlers.gethandler import GetHandler
-from ..customerrors.inputerror import InputException
+from src.classes.schemas.projectschema import ProjectSchema
+from src.classes.schemas.stageschema import StageSchema
+from src.classes.schemas.userschema import UserSchema
+from src.classes.requestshandlers.gethandler import GetHandler
+from src.classes.customerrors.inputerror import InputException
 from flask_login import login_user, logout_user
 
 

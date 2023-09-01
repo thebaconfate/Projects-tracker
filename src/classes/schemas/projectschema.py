@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, post_load
-from ..models.project import Project
+from src.classes.models.project import Project
 
 
 class ProjectSchema(Schema):

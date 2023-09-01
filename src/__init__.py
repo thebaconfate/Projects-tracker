@@ -1,10 +1,10 @@
 """Workhours project."""
 __version__ = "0.1.0"
 import os
-from .routes import bp
+from src.routes import bp
 from dotenv import load_dotenv
 from flask import Flask
-from .setup import login_manager, bcrypt
+from src.setup import login_manager, bcrypt
 
 login_manager.session_protection = "strong"
 login_manager.login_view = "login"
