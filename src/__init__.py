@@ -12,15 +12,15 @@ login_manager.login_message_category = "info"
 start_files = None
 
 
-def create_app(testing=True):
+def create_app():
     app = Flask(__name__)
     load_dotenv()
     app.secret_key = os.getenv('SECRET_KEY')
-    if testing:
+    '''if testing:
         start_files = os.getenv('TEST_FILES')
     else:
         start_files = os.getenv('DEPLOY_FILES')
-
+    '''
     login_manager.init_app(app)
     # migrate.init_app(app, db)
     bcrypt.init_app(app)
