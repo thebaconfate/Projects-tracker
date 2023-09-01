@@ -66,14 +66,10 @@ def new_project():
     return project
 
 
-@pytest.fixture()
-def mock_db():
-    return Mock()
-
 
 @pytest.fixture()
-def db_interface(mock_db):
-    return DatabaseInterface(mock_db)
+def db_interface():
+    return DatabaseInterface()
 
 
 # ! Might have to refactor this mocking the return values from method calls in the db_interface

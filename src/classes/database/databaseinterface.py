@@ -1,5 +1,5 @@
 import os
-import mysql.connector  
+import mysql.connector
 
 
 class DatabaseInterface():
@@ -34,8 +34,8 @@ class DatabaseInterface():
 
     def insert_stage(self, stage_name, project_id, days, seconds, price, last_updated):
         mysql, cursor = self.connect()
-        cursor.execute(
-            '''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage_name, project_id, days, seconds, price, last_updated))
+        cursor.execute('''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''',
+                       (stage_name, project_id, days, seconds, price, last_updated))
         mysql.commit()
         self.disconnect(mysql)
 
@@ -43,27 +43,24 @@ class DatabaseInterface():
 
     def get_projects(self, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id, name FROM projects where owner_id = %s;
-        ''', (user_id,))
+        cursor.execute(
+            '''SELECT id, name FROM projects where owner_id = %s;''', (user_id,))
         projects = cursor.fetchall()
         self.disconnect(mysql)
         return projects
 
     def get_project(self, project_id, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id, name FROM projects where owner_id = %s AND id = %s;
-        ''', (user_id, project_id))
+        cursor.execute(
+            '''SELECT id, name FROM projects where owner_id = %s AND id = %s;''', (user_id, project_id))
         project = cursor.fetchone()
         self.disconnect(mysql)
         return project
 
     def get_project_by_name(self, project_name, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id FROM projects where owner_id = %s AND name = %s;
-        ''', (user_id, project_name))
+        cursor.execute(
+            '''SELECT id FROM projects where owner_id = %s AND name = %s;''', (user_id, project_name))
         project = cursor.fetchone()
         self.disconnect(mysql)
         return project
@@ -78,7 +75,6 @@ class DatabaseInterface():
 
     def get_user_by_mail(self, email):
         mysql, cursor = self.connect()
-        cursor = mysql.cursor()
         cursor.execute(
             '''SELECT id, name, email, password FROM users WHERE email = %s''', (email,))
         user = cursor.fetchone()
