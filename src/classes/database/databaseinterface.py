@@ -6,10 +6,11 @@ class DatabaseInterface():
 
     def connect(self):
         db = mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DB_TEST')
+            host=os.getenv('MYSQLHOST'),
+            user=os.getenv('MYSQLUSER'),
+            password=os.getenv('MYSQLPASSWORD'),
+            database=os.getenv('MYSQLDATABASE'),
+            port = os.getenv('MYSQLPORT')
         )
         return db, db.cursor()
 
