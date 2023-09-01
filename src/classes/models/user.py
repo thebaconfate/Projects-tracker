@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from ...setup import bcrypt
+from src.setup import bcrypt
 
 
 class User(UserMixin):

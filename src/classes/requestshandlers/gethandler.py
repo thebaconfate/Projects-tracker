@@ -1,11 +1,4 @@
-from datetime import datetime
-
-from pytz import UTC
-from ..customerrors.inputerror import InputException
-from ..models.user import User
-from ..schemas.projectschema import ProjectSchema
-from ..schemas.stageschema import StageSchema
-from ..schemas.userschema import UserSchema
+from src.classes.schemas.userschema import UserSchema
 
 ''' class to delegate requests that fetch data to.'''
 

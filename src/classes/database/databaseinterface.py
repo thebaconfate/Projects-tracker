@@ -1,15 +1,16 @@
 import os
-import mysql.connector  
+import mysql.connector
 
 
 class DatabaseInterface():
 
     def connect(self):
         db = mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DB_TEST')
+            host=os.getenv('MYSQLHOST'),
+            user=os.getenv('MYSQLUSER'),
+            password=os.getenv('MYSQLPASSWORD'),
+            database=os.getenv('MYSQLDATABASE'),
+            port = os.getenv('MYSQLPORT')
         )
         return db, db.cursor()
 
@@ -34,8 +35,8 @@ class DatabaseInterface():
 
     def insert_stage(self, stage_name, project_id, days, seconds, price, last_updated):
         mysql, cursor = self.connect()
-        cursor.execute(
-            '''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''', (stage_name, project_id, days, seconds, price, last_updated))
+        cursor.execute('''INSERT INTO stages (name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''',
+                       (stage_name, project_id, days, seconds, price, last_updated))
         mysql.commit()
         self.disconnect(mysql)
 
@@ -43,27 +44,24 @@ class DatabaseInterface():
 
     def get_projects(self, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id, name FROM projects where owner_id = %s;
-        ''', (user_id,))
+        cursor.execute(
+            '''SELECT id, name FROM projects where owner_id = %s;''', (user_id,))
         projects = cursor.fetchall()
         self.disconnect(mysql)
         return projects
 
     def get_project(self, project_id, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id, name FROM projects where owner_id = %s AND id = %s;
-        ''', (user_id, project_id))
+        cursor.execute(
+            '''SELECT id, name FROM projects where owner_id = %s AND id = %s;''', (user_id, project_id))
         project = cursor.fetchone()
         self.disconnect(mysql)
         return project
 
     def get_project_by_name(self, project_name, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''
-            SELECT id FROM projects where owner_id = %s AND name = %s;
-        ''', (user_id, project_name))
+        cursor.execute(
+            '''SELECT id FROM projects where owner_id = %s AND name = %s;''', (user_id, project_name))
         project = cursor.fetchone()
         self.disconnect(mysql)
         return project
@@ -78,7 +76,6 @@ class DatabaseInterface():
 
     def get_user_by_mail(self, email):
         mysql, cursor = self.connect()
-        cursor = mysql.cursor()
         cursor.execute(
             '''SELECT id, name, email, password FROM users WHERE email = %s''', (email,))
         user = cursor.fetchone()
@@ -87,21 +84,21 @@ class DatabaseInterface():
 
     def get_stages(self, project_id, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''SELECT stages.id, stage_name, project_id, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
+        cursor.execute('''SELECT stages.id, stages.name, project_id, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;''', (project_id, user_id))
         stages = cursor.fetchall()
         self.disconnect(mysql)
         return stages
 
     def get_stage(self, stage_id, project_id, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''SELECT stages.id, stage_name, project_id, days, seconds, price, last_updated  FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.id = %s AND projects.id = %s and users.id = %s ;''', (stage_id, project_id, user_id))
+        cursor.execute('''SELECT stages.id, stages.name, project_id, days, seconds, price, last_updated  FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.id = %s AND projects.id = %s and users.id = %s ;''', (stage_id, project_id, user_id))
         stage = cursor.fetchone()
         self.disconnect(mysql)
         return stage
 
     def get_stage_by_name(self, stage_name, project_id, user_id):
         mysql, cursor = self.connect()
-        cursor.execute('''SELECT stages.id FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stage_name = %s AND projects.id = %s and users.id = %s ;''', (stage_name, project_id, user_id))
+        cursor.execute('''SELECT stages.id FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.name = %s AND projects.id = %s and users.id = %s ;''', (stage_name, project_id, user_id))
         stage = cursor.fetchone()
         self.disconnect(mysql)
         return stage
@@ -145,7 +142,7 @@ class DatabaseInterface():
     def update_stage_name(self, stage_id, new_name):
         mysql, cursor = self.connect()
         cursor.execute(
-            '''UPDATE stages SET stage_name = %s WHERE id = %s''', (new_name, stage_id))
+            '''UPDATE stages SET name = %s WHERE id = %s''', (new_name, stage_id))
         mysql.commit()
         self.disconnect(mysql)
 
