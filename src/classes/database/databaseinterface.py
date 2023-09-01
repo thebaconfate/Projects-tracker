@@ -35,7 +35,7 @@ class DatabaseInterface():
 
     def insert_stage(self, stage_name, project_id, days, seconds, price, last_updated):
         mysql, cursor = self.connect()
-        cursor.execute('''INSERT INTO stages (stage_name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''',
+        cursor.execute('''INSERT INTO stages (name, project_id, days, seconds, price, last_updated) VALUES (%s, %s, %s, %s, %s, %s)''',
                        (stage_name, project_id, days, seconds, price, last_updated))
         mysql.commit()
         self.disconnect(mysql)
