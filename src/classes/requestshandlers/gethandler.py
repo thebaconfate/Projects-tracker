@@ -1,3 +1,4 @@
+from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.userschema import UserSchema
 
 ''' class to delegate requests that fetch data to.'''
@@ -5,11 +6,10 @@ from src.classes.schemas.userschema import UserSchema
 
 class GetHandler():
 
-    def __init__(self, db):
-        self.db = db
-
     def fetch_user(self, user_id):
-        retrieved_user = self.db.get_user(user_id)
+        with DatabaseInterface() as db:
+            print('fetching user')
+            retrieved_user = db.get_user(user_id)
         if retrieved_user is not None:
             schema = UserSchema()
             retrieved_user = {
@@ -23,7 +23,8 @@ class GetHandler():
             return None
 
     def get_projects(self, user):
-        retrieved_projects = self.db.get_projects(user.id)
+        with DatabaseInterface() as db:
+            retrieved_projects = db.get_projects(user.id)
         projects = [
             {
                 'id': project[0],
@@ -34,7 +35,8 @@ class GetHandler():
         return projects
 
     def get_project(self, project_id, user):
-        retrieved_project = self.db.get_project(project_id, user.id)
+        with DatabaseInterface() as db:
+            retrieved_project = db.get_project(project_id, user.id)
         project = {
             'id': retrieved_project[0],
             'name': retrieved_project[1],
@@ -44,7 +46,8 @@ class GetHandler():
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
-        retrieved_stages = self.db.get_stages(project_id, user.id)
+        with DatabaseInterface() as db:
+            retrieved_stages = db.get_stages(project_id, user.id)
         stages = [
             {
                 'id': stage[0],
@@ -56,7 +59,8 @@ class GetHandler():
         return stages
 
     def get_stage(self, project_id, stage_id, user):
-        retrieved_stage = self.db.get_stage(project_id, stage_id, user.id)
+        with DatabaseInterface() as db:
+            retrieved_stage = db.get_stage(project_id, stage_id, user.id)
         stage = {
             'id': retrieved_stage[0],
             'name': retrieved_stage[1],

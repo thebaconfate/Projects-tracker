@@ -1,5 +1,4 @@
-
-
+from src.classes.database.databaseinterface import DatabaseInterface
 
 
 class Inithandler():
