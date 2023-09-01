@@ -25,16 +25,6 @@ connect = 'src.classes.database.databaseinterface.DatabaseInterface.connect'
 
 class TestDataBaseInterface:
 
-    def setUp(self, mock_connect, mock_disconnect, db_interface):
-        print('setting up')
-        mysql, Cursor = db_interface.connect()
-        Cursor.fetchall.reset_mock()
-        Cursor.fetchone.reset_mock()
-        Cursor.execute.reset_mock()
-        mysql.reset_mock()
-        Cursor.reset_mock()
-        mock_connect.reset_mock()
-        mock_disconnect.reset_mock()
 
     #! ALWAYS KEEP MOCK_CONNECT AS SECOND PARAMETER IN TESTS!
     #! ALWAYS KEEP MOCK_DISCONNECT AS THIRD PARAMETER IN TESTS!
@@ -48,6 +38,13 @@ class TestDataBaseInterface:
         mock_connect.assert_called_once()
         assert mysql == mock_connect.return_value[0]
         assert cursor == mock_connect.return_value[1]
+
+    @mock.patch(disconnect)
+    @mock.patch(connect, return_value=(Mock(), Mock()))
+    def test_disconnect(self, mock_connect, mock_disconnect, db_interface):
+        mysql = db_interface.connect()[0]
+        db_interface.disconnect(mysql)
+        mock_disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
@@ -195,71 +192,85 @@ class TestDataBaseInterface:
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_user_password(self, mock_connect, mock_disconnect, db_interface):
         db_interface.update_user_password(1, 'new_password')
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE users SET password = %s WHERE id = %s''',
             ('new_password', 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_project_name(self, mock_connect, mock_disconnect, db_interface):
         db_interface.update_project_name(1, 'new_project_name')
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE projects SET name = %s WHERE id = %s''',
             ('new_project_name', 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_stage_name(self, mock_connect, mock_disconnect, db_interface):
         db_interface.update_stage_name(1, 'new_stage_name')
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE stages SET stage_name = %s WHERE id = %s''',
             ('new_stage_name', 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_stage_days(self, mock_connect, mock_disconnect, db_interface):
         db_interface.update_stage_days(1, 2)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE stages SET days = %s WHERE id = %s''',
             (2, 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_stage_seconds(self, mock_connect, mock_disconnect, db_interface):
         db_interface.update_stage_seconds(1, 2)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE stages SET seconds = %s WHERE id = %s''',
             (2, 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_stage_price(self, mock_connect, mock_disconnect, db_interface):
-        db_interface.update_stage_price(1, 2)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        db_interface.update_stage_price(1, 2.5)
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE stages SET price = %s WHERE id = %s''',
-            (2, 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+            (2.5, 1))
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_update_stage_last_updated(self, mock_connect, mock_disconnect, db_interface):
-        db_interface.update_stage_last_updated(1, time)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        db_interface.update_stage_last_updated(1, 'new_time')
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''UPDATE stages SET last_updated = %s WHERE id = %s''',
-            (time, 1))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+            ('new_time', 1))
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     '''DELETE TESTS'''
 
@@ -267,28 +278,33 @@ class TestDataBaseInterface:
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_delete_user(self, mock_connect, mock_disconnect, db_interface):
         db_interface.delete_user(1)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
-            '''DELETE FROM users WHERE id = %s''',
-            (1,))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with('''DELETE FROM users WHERE id = %s''',
+                                               (1,))
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_delete_project(self, mock_connect, mock_disconnect, db_interface):
         db_interface.delete_project(1)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''DELETE FROM projects WHERE id = %s''',
             (1,))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
 
     @mock.patch(disconnect)
     @mock.patch(connect, return_value=(Mock(), Mock()))
     def test_delete_stage(self, mock_connect, mock_disconnect, db_interface):
         db_interface.delete_stage(1)
-        db_interface.db.connection.cursor().execute.assert_called_once_with(
+        mysql, cursor = mock_connect.return_value
+        db_interface.connect.assert_called_once()
+        cursor.execute.assert_called_once_with(
             '''DELETE FROM stages WHERE id = %s''',
             (1,))
-        db_interface.db.connection.commit.assert_called_once()
-        db_interface.db.connection.cursor().close.assert_called_once()
+        mysql.commit.assert_called_once()
+        db_interface.disconnect.assert_called_once_with(mysql)
