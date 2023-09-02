@@ -11,7 +11,7 @@ from src.classes.models.stage import Stage
 from src.classes.models.user import User
 from src import create_app
 from src.classes.database.databaseinterface import DatabaseInterface
-from src.classes.requesthandler import Requesthandler
+from src.classes.requesthandler import HandlerFactory
 from src.setup import bcrypt
 
 
@@ -66,7 +66,6 @@ def new_project():
     return project
 
 
-
 @pytest.fixture()
 def db_interface():
     return DatabaseInterface()
@@ -110,4 +109,4 @@ def puthandler(db_interface):
 
 @pytest.fixture()
 def requesthandler(db_interface):
-    return Requesthandler(db_interface)
+    return HandlerFactory(db_interface)

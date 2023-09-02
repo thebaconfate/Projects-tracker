@@ -1,8 +1,7 @@
-
-
+from src.classes.database.databaseinterface import DatabaseInterface
 
 
 class Inithandler():
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
+        pass

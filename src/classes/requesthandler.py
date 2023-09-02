@@ -4,11 +4,22 @@ from src.classes.requestshandlers.inithandler import Inithandler
 from src.classes.requestshandlers.posthandler import Posthandler
 from src.classes.requestshandlers.puthandler import Puthandler
 
-''' main requests handler class'''
+''' Factory class; might be useful in the future '''
 
 
-class Requesthandler(Delhandler, Puthandler, Posthandler, GetHandler, Inithandler):
-    def __init__(self, db, standard_tz):
-        super().__init__(db)
-        self.db = db
-        self.standard_tz = standard_tz
+class HandlerFactory():
+
+    def create_del_handler(self):
+        return Delhandler()
+
+    def createPutHandler(self):
+        return Puthandler()
+
+    def createPostHandler(self):
+        return Posthandler()
+
+    def createGetHandler(self):
+        return GetHandler()
+
+    def createInitHandler(self):
+        return Inithandler()

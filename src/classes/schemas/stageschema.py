@@ -6,9 +6,9 @@ class StageSchema(Schema):
     id = fields.Int(required=True)
     name = fields.Str(required=True)
     project_id = fields.Int(required=True)
-    price = fields.Float(load_default=0.0)
     days = fields.Int(load_default=0)
     seconds = fields.Int(load_default=0)
+    price = fields.Float(load_default=0.0)
     last_updated = fields.DateTime()
 
     @post_load
