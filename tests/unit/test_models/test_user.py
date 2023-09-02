@@ -1,7 +1,7 @@
 from ...conftest import test_pass, test_user_email, test_user_name
 
 
-class TestUser():
+class TestUser:
     def test_new_user_with_fixture(self, new_user):
         assert new_user.id == 1
         assert new_user.name == test_user_name

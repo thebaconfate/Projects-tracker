@@ -15,17 +15,19 @@ from src.classes.requesthandler import HandlerFactory
 from src.setup import bcrypt
 
 
-test_user_name = 'test_name'
+test_user_name = "test_name"
 test_user_email = "test_user@testmail.com"
-test_pass = 'test_password'
+test_pass = "test_password"
 hashed_test_pass = bcrypt.generate_password_hash(test_pass)
 
 
 @pytest.fixture()
 def app():
-    app = create_app({
-        'TESTING': True,
-    })
+    app = create_app(
+        {
+            "TESTING": True,
+        }
+    )
     return app
 
 
@@ -41,28 +43,27 @@ def runner(app):
 
 @pytest.fixture()
 def new_user():
-    user = User(id=1, name=test_user_name, email=test_user_email,
-                password=test_pass)
+    user = User(id=1, name=test_user_name, email=test_user_email, password=test_pass)
     return user
 
 
 @pytest.fixture()
 def new_stage():
-    stage = Stage(id=1,
-                  name='test_name',
-                  project_id=1,
-                  price=1.0,
-                  days=1,
-                  seconds=1,
-                  last_updated=datetime(2020, 1, 1, 0, 0, 0, 0))
+    stage = Stage(
+        id=1,
+        name="test_name",
+        project_id=1,
+        price=1.0,
+        days=1,
+        seconds=1,
+        last_updated=datetime(2020, 1, 1, 0, 0, 0, 0),
+    )
     return stage
 
 
 @pytest.fixture()
 def new_project():
-    project = Project(id=1,
-                      name='test_name',
-                      owner_id=1)
+    project = Project(id=1, name="test_name", owner_id=1)
     return project
 
 
@@ -81,14 +82,26 @@ def delhandler(db_interface):
 def get_handler():
     db_interface = Mock()
     db_interface.get_user.return_value = (
-        1, test_user_name, test_user_email, hashed_test_pass)
-    db_interface.get_projects.return_value = (
-        (1, 'test_name', 1), (2, 'test_name2', 1))
-    db_interface.get_project.return_value = (1, 'test_name', 1)
-    db_interface.get_stages.return_value = ((1, 'test_name', 1, datetime(
-        2020, 1, 1, 0, 0, 0, 0)), (2, 'test_name2', 1, datetime(2020, 1, 1, 0, 0, 0, 0)))
+        1,
+        test_user_name,
+        test_user_email,
+        hashed_test_pass,
+    )
+    db_interface.get_projects.return_value = ((1, "test_name", 1), (2, "test_name2", 1))
+    db_interface.get_project.return_value = (1, "test_name", 1)
+    db_interface.get_stages.return_value = (
+        (1, "test_name", 1, datetime(2020, 1, 1, 0, 0, 0, 0)),
+        (2, "test_name2", 1, datetime(2020, 1, 1, 0, 0, 0, 0)),
+    )
     db_interface.get_stage.return_value = (
-        1, 'test_name', 1, 1.5, 1, 1, datetime(2020, 1, 1, 0, 0, 0, 0))
+        1,
+        "test_name",
+        1,
+        1.5,
+        1,
+        1,
+        datetime(2020, 1, 1, 0, 0, 0, 0),
+    )
     return GetHandler(db_interface)
 
 

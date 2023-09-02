@@ -1,9 +1,6 @@
-
-'''class to handle delete requests'''
-
+"""class to handle delete requests"""
 
 
-class Delhandler():
-
+class Delhandler:
     def __init__(self):
         pass
