@@ -2,6 +2,7 @@ import os
 import mysql.connector
 
 
+# TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs
 class DatabaseInterface:
     def __enter__(self):
         print("opening connection")
