@@ -49,6 +49,7 @@ class Puthandler():
                     'last_updated', 'price', 'days', 'seconds', 'name'))
         with DatabaseInterface() as db:
             old_stage = db.get_stage(project_id, stage_id, user.id)
+            print(old_stage)
             if old_stage is not None:
                 old_stage = Stage(id=old_stage[0], name=old_stage[1], project_id=old_stage[2],
                                   days=old_stage[3], seconds=old_stage[4],  price=old_stage[5], last_updated=old_stage[6])

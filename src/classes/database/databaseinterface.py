@@ -83,7 +83,7 @@ class DatabaseInterface():
         stages = cursor.fetchall()
         return stages
 
-    def get_stage(self, stage_id, project_id, user_id):
+    def get_stage(self, project_id, stage_id, user_id):
         cursor = self.__cursor()
         cursor.execute('''SELECT stages.id, stages.name, project_id, days, seconds, price, last_updated  FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE stages.id = %s AND projects.id = %s and users.id = %s ;''', (stage_id, project_id, user_id))
         stage = cursor.fetchone()
