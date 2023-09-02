@@ -21,13 +21,11 @@ class Puthandler():
             case 'name':
                 guard_stage = db.get_stage_by_name(
                     value, stage.project_id, user.id)
-                print(f'guard stage {guard_stage}')
                 if guard_stage is None:
                     db.update_stage_name(stage.id, value)
                 else:
                     raise InputException('stage name already exists')
             case 'price':
-                print(f'updating price {value}')
                 db.update_stage_price(stage.id, value)
             case 'time':
                 for key, value in value.items():
@@ -49,7 +47,6 @@ class Puthandler():
         schema = StageSchema()
         schema.load(payload, partial=('id', 'project_id',
                     'last_updated', 'price', 'days', 'seconds', 'name'))
-        print(payload)
         with DatabaseInterface() as db:
             old_stage = db.get_stage(project_id, stage_id, user.id)
             if old_stage is not None:
@@ -66,7 +63,6 @@ class Puthandler():
                 raise InputException('''Couldn't find stage''')
 
     def add_time(self, project_id, stage_id, payload, user):
-        print('add time')
         if "time" in payload:
             payload = {
                 "days": payload["time"]["days"],
@@ -75,13 +71,9 @@ class Puthandler():
         schema = StageSchema()
         new_time = schema.load(payload, partial=('id', 'project_id',
                                                  'last_updated', 'price', 'days', 'seconds', 'name'))
-        print('new time')
         with DatabaseInterface() as db:
-            print('db')
             stage = db.get_stage(project_id, stage_id, user.id)
-            print(stage)
             if stage is not None:
-                print('checkpoint stage')
                 stage = Stage(id=stage[0], name=stage[1], project_id=stage[2],
                               days=stage[3], seconds=stage[4],  price=stage[5], last_updated=stage[6])
                 stage.days += new_time.days

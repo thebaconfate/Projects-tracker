@@ -12,7 +12,6 @@ class GetHandler():
 
     def fetch_user(self, user_id):
         with DatabaseInterface() as db:
-            print('fetching user')
             retrieved_user = db.get_user(user_id)
         if retrieved_user is not None:
             schema = UserSchema()
