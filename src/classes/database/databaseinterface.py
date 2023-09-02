@@ -5,7 +5,6 @@ import mysql.connector
 # TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs
 class DatabaseInterface:
     def __enter__(self):
-        print("opening connection")
         self.mysql = mysql.connector.connect(
             host=os.getenv("MYSQLHOST"),
             user=os.getenv("MYSQLUSER"),
@@ -16,7 +15,6 @@ class DatabaseInterface:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print("closing connection")
         self.mysql.close()
 
     def __cursor(self):
@@ -82,7 +80,6 @@ class DatabaseInterface:
         return user
 
     def get_user_by_mail(self, email):
-        print("getting user by mail")
         cursor = self.__cursor()
         cursor.execute(
             """SELECT id, name, email, password FROM users WHERE email = %s""", (email,)
@@ -179,7 +176,6 @@ class DatabaseInterface:
         cursor.execute(
             """UPDATE stages SET price = %s WHERE id = %s""", (new_price, stage_id)
         )
-        print(f"updated stage price {new_price} {stage_id}")
         self.mysql.commit()
 
     def update_stage_last_updated(self, stage_id, new_last_updated):
