@@ -1,16 +1,19 @@
 from flask import Blueprint, jsonify, make_response, request
 from flask_login import login_required, current_user
+from src.classes.requestshandlers.gethandler import GetHandler
+from src.classes.requestshandlers.delhandler import Delhandler
+from src.classes.requestshandlers.inithandler import Inithandler
+from src.classes.requestshandlers.puthandler import Puthandler
+from src.classes.requestshandlers.posthandler import Posthandler
 from src.classes.errorhandler import ErrorHandler
-from src.classes.requesthandler import Requesthandler
 from src.setup import login_manager, tz
-from src.setup import dbinterface as db
 
 bp = Blueprint('auth', __name__)
-handler = Requesthandler(db, tz)
 
 
 @login_manager.user_loader
 def load_user(user_id):
+    handler = GetHandler()
     return handler.fetch_user(user_id)
 
 # * error handler for error codes.
@@ -35,12 +38,14 @@ def index():
 
 @bp.post('/register', strict_slashes=False)
 def register():
+    handler = Posthandler()
     handler.register(request.json)
     return jsonify('added user'), 200
 
 
 @bp.post('/login/', strict_slashes=False)
 def login():
+    handler = Posthandler()
     result = handler.login(request.json)
     return jsonify(result), 200
 
@@ -48,33 +53,16 @@ def login():
 @bp.route('/logout/', strict_slashes=False)
 @login_required
 def logout():
+    handler = Posthandler()
     handler.logout()
     return jsonify({"msg": "logged user out"}), 200
-
-# * creates the required tables in the database.
-
-# * migrates stage(s) from a json file to the database. Also adds the project if it doesn't exist.
-
-
-@bp.post('/migrate/project:<project_name>')
-@login_required
-def migrate_stages(project_name):
-    handler.migrate_stages(project_name, request.json)
-    return 'migration successful', 200
-
-
-# * migrates all projects and stages from a json file to the database.
-@bp.post('/migrate/projects')
-@login_required
-def migrate_projects():
-    handler.migrate_projects(request.json)
-    return 'migration successful', 200
 
 
 @bp.post('/create_project')
 @login_required
 def create_project():
     # * adds a project to the database
+    handler = Posthandler()
     handler.create_project(request.json, current_user)
     return jsonify('added project'), 200
 
@@ -83,6 +71,7 @@ def create_project():
 @bp.get('/projects:all')
 @login_required
 def get_projects():
+    handler = GetHandler()
     results = handler.get_projects(current_user)
     return results, 200
 
@@ -91,6 +80,7 @@ def get_projects():
 @bp.get('/project:<project_id>/stages:all')
 @login_required
 def get_stages(project_id):
+    handler = GetHandler()
     result = handler.get_stages(project_id, current_user)
     return result, 200
 
@@ -98,6 +88,7 @@ def get_stages(project_id):
 @bp.post('/project:<project_id>/create_stage')
 @login_required
 def create_stage(project_id):
+    handler = Posthandler()
     handler.create_stage(request.json, project_id, current_user)
     return jsonify('stage_added'), 200
 
@@ -107,17 +98,28 @@ def create_stage(project_id):
 def get_stage(project_id, stage_id):
     # * gets information about a stage from a project
     if request.method == 'GET':
+        handler = GetHandler()
         result = handler.get_stage(project_id, stage_id, current_user)
         return result, 200
     elif request.method == 'PUT':
+        handler = Puthandler()
         result = handler.update_stage(
             project_id, stage_id, request.json, current_user)
         return result, 200
 
 
+@bp.put('/project:<project_id>/stage:<stage_id>/add')
+@login_required
+def add_time(project_id, stage_id):
+    handler = Puthandler()
+    handler.add_time(project_id, stage_id, request.json, current_user)
+    return jsonify('time added'), 200
+
+
 @bp.put('/project:<project_id>')
 @login_required
 def update_project(project_id):
+    handler = Puthandler()
     handler.update_project(project_id, request.json, current_user)
     return 'project updated', 200
 
