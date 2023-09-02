@@ -2,7 +2,7 @@ import os
 import mysql.connector
 
 
-# TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs
+# TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs more found at: https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-cursor.html
 class DatabaseInterface:
     def __enter__(self):
         self.mysql = mysql.connector.connect(
