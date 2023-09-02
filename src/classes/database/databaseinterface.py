@@ -5,6 +5,7 @@ import mysql.connector
 class DatabaseInterface():
 
     def __enter__(self):
+        print('opening connection')
         self.mysql = mysql.connector.connect(
             host=os.getenv('MYSQLHOST'),
             user=os.getenv('MYSQLUSER'),
@@ -148,6 +149,7 @@ class DatabaseInterface():
         cursor = self.__cursor()
         cursor.execute(
             '''UPDATE stages SET price = %s WHERE id = %s''', (new_price, stage_id))
+        print(f'updated stage price {new_price} {stage_id}')
         self.mysql.commit()
 
     def update_stage_last_updated(self, stage_id, new_last_updated):

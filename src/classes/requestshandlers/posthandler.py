@@ -1,7 +1,5 @@
 from datetime import datetime
-from functools import reduce
-
-from pytz import timezone, utc
+from src.classes.models.user import User
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.projectschema import ProjectSchema
 from src.classes.schemas.stageschema import StageSchema
@@ -24,9 +22,9 @@ class Posthandler(GetHandler):
             retrieved_user = db.get_user_by_mail(user.email)
             if retrieved_user is None:
                 user.hash_password()
-                self.db.insert_user(user.name, user.email, user.password)
+                db.insert_user(user.name, user.email, user.password)
                 retrieved_user = db.get_user_by_mail(user.email)
-            else: 
+            else:
                 raise InputException('user already exists')
         user.id = retrieved_user[0]
         login_user(user)
@@ -37,11 +35,11 @@ class Posthandler(GetHandler):
         with DatabaseInterface() as db:
             retrieved_user = db.get_user_by_mail(user.email)
         try:
-            registered_user = schema.load(
-                {"id": retrieved_user[0],
-                 "name": retrieved_user[1],
-                 "email": retrieved_user[2],
-                 "password": retrieved_user[3]})
+            registered_user = User(
+                id=retrieved_user[0],
+                name=retrieved_user[1],
+                email=retrieved_user[2],
+                password=retrieved_user[3])
             if registered_user.check_password(user.password):
                 login_user(registered_user)
         except Exception:
@@ -57,7 +55,7 @@ class Posthandler(GetHandler):
             retrieved_project = db.get_project_by_name(project.name, user.id)
             if retrieved_project is None:
                 db.insert_project(project.name, user.id)
-            else: 
+            else:
                 raise InputException('project already exists for user')
 
     def create_stage(self, payload, project_id, user):
@@ -65,11 +63,11 @@ class Posthandler(GetHandler):
         stage = schema.load(payload, partial=(
             'id', 'project_id', 'last_updated', 'price', 'days', 'seconds'))
         with DatabaseInterface() as db:
-            retrieved_stage = self.db.get_stage_by_name(
+            retrieved_stage = db.get_stage_by_name(
                 stage.name, project_id, user.id)
             if retrieved_stage is None:
                 stage.last_updated = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
                 db.insert_stage(stage.name, project_id, stage.days,
-                                 stage.seconds, stage.price, stage.last_updated)
+                                stage.seconds, stage.price, stage.last_updated)
             else:
                 raise InputException('stage already exists within project')

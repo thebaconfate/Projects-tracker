@@ -1,3 +1,7 @@
+from src.classes.models.project import Project
+from src.classes.models.stage import Stage
+from src.classes.schemas.projectschema import ProjectSchema
+from src.classes.schemas.stageschema import StageSchema
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.userschema import UserSchema
 
@@ -12,13 +16,10 @@ class GetHandler():
             retrieved_user = db.get_user(user_id)
         if retrieved_user is not None:
             schema = UserSchema()
-            retrieved_user = {
-                'id': retrieved_user[0],
-                'name': retrieved_user[1],
-                'email': retrieved_user[2],
-                'password': retrieved_user[3]
-            }
-            return schema.load(retrieved_user)
+            return schema.load({"id": retrieved_user[0],
+                                "name": retrieved_user[1],
+                                "email": retrieved_user[2],
+                                "password": retrieved_user[3]})
         else:
             return None
 
@@ -29,20 +30,19 @@ class GetHandler():
             {
                 'id': project[0],
                 'name': project[1],
-                'owner_id': project[2]
             } for project in retrieved_projects
         ]
         return projects
 
     def get_project(self, project_id, user):
+        schema = ProjectSchema()
         with DatabaseInterface() as db:
             retrieved_project = db.get_project(project_id, user.id)
-        project = {
-            'id': retrieved_project[0],
-            'name': retrieved_project[1],
-            'owner_id': retrieved_project[2]
-        }
-        return project
+        project = Project(
+            id=retrieved_project[0],
+            name=retrieved_project[1],
+            owner_id=retrieved_project[2])
+        return schema.dump(project)
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
@@ -59,15 +59,13 @@ class GetHandler():
         return stages
 
     def get_stage(self, project_id, stage_id, user):
+        schema = StageSchema()
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage(project_id, stage_id, user.id)
-        stage = {
-            'id': retrieved_stage[0],
-            'name': retrieved_stage[1],
-            'project_id': retrieved_stage[2],
-            'price': retrieved_stage[3],
-            'days': retrieved_stage[4],
-            'seconds': retrieved_stage[5],
-            'last_updated': retrieved_stage[6]
-        }
-        return stage
+            return schema.dump(Stage(id=retrieved_stage[0],
+                                    name=retrieved_stage[1],
+                                    project_id=retrieved_stage[2],
+                                    days=retrieved_stage[3],
+                                    seconds=retrieved_stage[4],
+                                    price=retrieved_stage[5],
+                                    last_updated=retrieved_stage[6]))
