@@ -114,7 +114,15 @@ def add_time(project_id, stage_id):
     return jsonify("time added"), 200
 
 
-@bp.put("/project:<project_id>")
+@bp.get("/project:<project_id>/calc")
+@login_required
+def calc_add_time(project_id):
+    handler = GetHandler()
+    result = handler.calc(project_id, current_user)
+    return jsonify(result), 200
+
+
+@bp.get("/project:<project_id>")
 @login_required
 def update_project(project_id):
     handler = Puthandler()

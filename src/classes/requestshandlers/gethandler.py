@@ -78,3 +78,18 @@ class GetHandler:
                     last_updated=retrieved_stage[6],
                 )
             )
+
+    def calc(self, project_id, user):
+        with DatabaseInterface() as db:
+            retrieved_stages = db.get_time_and_price(project_id, user.id)
+        result = 0
+        for stage in retrieved_stages:
+            days = stage[0]
+            seconds = stage[1]
+            price = stage[2]
+            total_hours = days * 24 + seconds // 3600
+            print(total_hours)
+            total_mins = (seconds % 3600) // 60
+            print(total_mins)
+            result += total_hours * price + (total_mins // 15) * (price / 4)
+        return {"total value": result}
