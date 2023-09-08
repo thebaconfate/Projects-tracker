@@ -42,11 +42,10 @@ def register():
     return jsonify("added user"), 200
 
 
-@bp.post("/login/", strict_slashes=False)
+@bp.post("/login", strict_slashes=False)
 def login():
     handler = Posthandler()
-    print(request.args)
-    result = handler.login(request.args.get("email"), request.args.get("password"))
+    result = handler.login(request.args)
     return jsonify(result), 200
 
 
