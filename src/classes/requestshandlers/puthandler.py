@@ -37,18 +37,16 @@ class Puthandler:
                 last_updated = datetime.utcnow().strftime(self.timeformat)
                 db.update_stage_last_updated(stage.id, last_updated)
             case _:
-                logging.error(
+                """logging.error(
                     f"invalid payload key:{key} to update stage value: {value}"
-                )
+                )"""
                 raise InputException("invalid payload to update stage")
 
-    def update_stage(self, project_id, stage_id, payload, user):
+    def update_stage(self, payload, user):
         schema = StageSchema()
-        schema.load(
+        stage = schema.load(
             payload,
             partial=(
-                "id",
-                "project_id",
                 "last_updated",
                 "price",
                 "days",
@@ -57,7 +55,7 @@ class Puthandler:
             ),
         )
         with DatabaseInterface() as db:
-            old_stage = db.get_stage(project_id, stage_id, user.id)
+            old_stage = db.get_stage(stage.project_id, stage.id, user.id)
             if old_stage is not None:
                 old_stage = Stage(
                     id=old_stage[0],
@@ -73,7 +71,7 @@ class Puthandler:
                         self.switch_stage(db, old_stage, key, value, user)
                     except InputException:
                         continue
-                stage = db.get_stage(project_id, stage_id, user.id)
+                stage = db.get_stage(stage.project_id, stage.id, user.id)
                 return schema.dump(
                     Stage(
                         id=stage[0],

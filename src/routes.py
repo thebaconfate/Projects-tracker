@@ -38,15 +38,14 @@ def index():
 @bp.post("/register", strict_slashes=False)
 def register():
     handler = Posthandler()
-    handler.register(request.json)
+    handler.register(request.args)
     return jsonify("added user"), 200
 
 
-@bp.post("/login/", strict_slashes=False)
+@bp.post("/login", strict_slashes=False)
 def login():
     handler = Posthandler()
-    print(request.args)
-    result = handler.login(request.args.get("email"), request.args.get("password"))
+    result = handler.login(request.args)
     return jsonify(result), 200
 
 
@@ -61,9 +60,8 @@ def logout():
 @bp.post("/create_project")
 @login_required
 def create_project():
-    # * adds a project to the database
     handler = Posthandler()
-    handler.create_project(request.json, current_user)
+    handler.create_project(request.args, current_user)
     return jsonify("added project"), 200
 
 
@@ -81,44 +79,56 @@ def get_projects():
 @login_required
 def get_stages():
     handler = GetHandler()
-    result = handler.get_stages(request.args.get("project_id"), current_user)
+    project_id = request.args.get("project_id")
+    result = handler.get_stages(project_id, current_user)
     return result, 200
 
 
-@bp.post("/project:<project_id>/create_stage")
+# TODO refactor to put payload in parameters and refactor the url
+
+
+@bp.post("/create_stage")
 @login_required
-def create_stage(project_id):
+def create_stage():
     handler = Posthandler()
-    handler.create_stage(request.json, project_id, current_user)
+    project_id = request.args.get("project_id")
+    handler.create_stage(request.args, project_id, current_user)
     return jsonify("stage_added"), 200
 
 
-@bp.route("/project:<project_id>/stage:<stage_id>", methods=["GET", "PUT"])
+@bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
-def get_stage(project_id, stage_id):
+def get_stage():
     # * gets information about a stage from a project
     if request.method == "GET":
         handler = GetHandler()
-        result = handler.get_stage(project_id, stage_id, current_user)
+        result = handler.get_stage(request.args, current_user)
         return result, 200
     elif request.method == "PUT":
         handler = Puthandler()
-        result = handler.update_stage(project_id, stage_id, request.json, current_user)
+        result = handler.update_stage(request.args, current_user)
+        return result, 200
+    elif request.method == "POST":
+        handler = Posthandler()
+        result = handler.create_stage(request.args, current_user)
         return result, 200
 
 
-@bp.put("/project:<project_id>/stage:<stage_id>/add")
+@bp.put("/time")
 @login_required
-def add_time(project_id, stage_id):
+def add_time():
     handler = Puthandler()
+    project_id = request.args.get("project_id")
+    stage_id = request.args.get("stage_id")
     handler.add_time(project_id, stage_id, request.json, current_user)
     return jsonify("time added"), 200
 
 
-@bp.get("/project:<project_id>/calc")
+@bp.get("/calc")
 @login_required
-def calc_add_time(project_id):
+def calc_add_time():
     handler = GetHandler()
+    project_id = request.args.get("project_id")
     result = handler.calc(project_id, current_user)
     return jsonify(result), 200
 

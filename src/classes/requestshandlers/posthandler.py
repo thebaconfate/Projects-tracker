@@ -29,9 +29,9 @@ class Posthandler(GetHandler):
         user.id = retrieved_user[0]
         login_user(user)
 
-    def login(self, email, password):
+    def login(self, payload):
         schema = UserSchema()
-        user = schema.load({'email': email, 'password': password}, partial=("id", "name"))
+        user = schema.load(payload, partial=("id", "name"))
         with DatabaseInterface() as db:
             retrieved_user = db.get_user_by_mail(user.email)
         try:
@@ -59,19 +59,21 @@ class Posthandler(GetHandler):
             else:
                 raise InputException("project already exists for user")
 
-    def create_stage(self, payload, project_id, user):
+    def create_stage(self, payload, user):
         schema = StageSchema()
         stage = schema.load(
             payload,
-            partial=("id", "project_id", "last_updated", "price", "days", "seconds"),
+            partial=("id", "last_updated", "price", "days", "seconds"),
         )
         with DatabaseInterface() as db:
-            retrieved_stage = db.get_stage_by_name(stage.name, project_id, user.id)
+            retrieved_stage = db.get_stage_by_name(
+                stage.name, stage.project_id, user.id
+            )
             if retrieved_stage is None:
                 stage.last_updated = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
                 db.insert_stage(
                     stage.name,
-                    project_id,
+                    stage.project_id,
                     stage.days,
                     stage.seconds,
                     stage.price,
