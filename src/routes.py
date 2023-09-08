@@ -85,6 +85,8 @@ def get_stages():
     return result, 200
 
 
+# TODO refactor to put payload in parameters and refactor the url
+
 @bp.post("/project:<project_id>/create_stage")
 @login_required
 def create_stage(project_id):
@@ -107,10 +109,13 @@ def get_stage(project_id, stage_id):
         return result, 200
 
 
-@bp.put("/project:<project_id>/stage:<stage_id>/add")
+
+@bp.put("/add_time")
 @login_required
-def add_time(project_id, stage_id):
+def add_time():
     handler = Puthandler()
+    project_id = request.args.get("project_id") 
+    stage_id = request.args.get("stage_id")
     handler.add_time(project_id, stage_id, request.json, current_user)
     return jsonify("time added"), 200
 
