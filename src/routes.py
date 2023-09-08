@@ -80,7 +80,8 @@ def get_projects():
 @login_required
 def get_stages():
     handler = GetHandler()
-    result = handler.get_stages(request.args.get("project_id"), current_user)
+    project_id = request.args.get("project_id")
+    result = handler.get_stages(project_id, current_user)
     return result, 200
 
 
