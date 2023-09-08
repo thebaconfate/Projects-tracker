@@ -1,3 +1,4 @@
+from datetime import datetime
 from pytz import UTC
 
 
@@ -23,6 +24,11 @@ class Stage:
     def get_last_updated(self):
         utc = self.last_updated.astimezone(UTC)
         return utc.strftime("%Y-%m-%d %H:%M:%S")
+
+    def merge(self, other_user):
+        self.days += other_user.days
+        self.seconds += other_user.seconds
+        self.last_updated = datetime.utcnow()
 
     def __repr__(self):
         return "<Stage(id={self.id!r}, project_id={self.project_id!r})>".format(

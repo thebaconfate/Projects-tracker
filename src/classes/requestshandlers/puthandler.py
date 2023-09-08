@@ -86,14 +86,14 @@ class Puthandler:
             else:
                 raise InputException("""Couldn't find stage""")
 
-    def add_time(self, project_id, stage_id, payload, user):
+    def add_time(self, payload, user):
         if "time" in payload:
             payload = {
                 "days": payload["time"]["days"],
                 "seconds": payload["time"]["seconds"],
             }
         schema = StageSchema()
-        new_time = schema.load(
+        stage = schema.load(
             payload,
             partial=(
                 "id",
@@ -106,24 +106,20 @@ class Puthandler:
             ),
         )
         with DatabaseInterface() as db:
-            stage = db.get_stage(project_id, stage_id, user.id)
-            if stage is not None:
-                stage = Stage(
-                    id=stage[0],
-                    name=stage[1],
-                    project_id=stage[2],
-                    days=stage[3],
-                    seconds=stage[4],
-                    price=stage[5],
-                    last_updated=stage[6],
+            stored_stage = db.get_stage(stage.project_id, stage.id, user.id)
+            if stored_stage is not None:
+                stored_stage = Stage(
+                    id=stored_stage[0],
+                    name=stored_stage[1],
+                    project_id=stored_stage[2],
+                    days=stored_stage[3],
+                    seconds=stored_stage[4],
+                    price=stored_stage[5],
+                    last_updated=stored_stage[6],
                 )
-                stage.days += new_time.days
-                stage.seconds += new_time.seconds
-                stage.last_updated = datetime.utcnow()
-                db.update_stage_days(stage.id, stage.days)
-                db.update_stage_seconds(stage.id, stage.seconds)
-                db.update_stage_last_updated(stage.id, stage.last_updated)
-                return schema.dump(stage)
+                stored_stage.merge(stage)
+                db.store_stage(stored_stage.id, stored_stage.days, stored_stage.seconds, stored_stage.get_last_updated())
+        return schema.dump(stored_stage)
 
     def switch_project(self, db, key, value, project_id, user):
         match key:

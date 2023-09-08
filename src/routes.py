@@ -84,43 +84,30 @@ def get_stages():
     return result, 200
 
 
-# TODO refactor to put payload in parameters and refactor the url
-
-
-@bp.post("/create_stage")
-@login_required
-def create_stage():
-    handler = Posthandler()
-    project_id = request.args.get("project_id")
-    handler.create_stage(request.args, project_id, current_user)
-    return jsonify("stage_added"), 200
-
-
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
 def get_stage():
     # * gets information about a stage from a project
-    if request.method == "GET":
-        handler = GetHandler()
-        result = handler.get_stage(request.args, current_user)
-        return result, 200
-    elif request.method == "PUT":
-        handler = Puthandler()
-        result = handler.update_stage(request.args, current_user)
-        return result, 200
-    elif request.method == "POST":
-        handler = Posthandler()
-        result = handler.create_stage(request.args, current_user)
-        return result, 200
+    match request.method:
+        case "GET":
+            handler = GetHandler()
+            result = handler.get_stage(request.args, current_user)
+            return result, 200
+        case "PUT":
+            handler = Puthandler()
+            result = handler.update_stage(request.args, current_user)
+            return result, 200
+        case "POST":
+            handler = Posthandler()
+            result = handler.create_stage(request.args, current_user)
+            return result, 200
 
 
 @bp.put("/time")
 @login_required
 def add_time():
     handler = Puthandler()
-    project_id = request.args.get("project_id")
-    stage_id = request.args.get("stage_id")
-    handler.add_time(project_id, stage_id, request.json, current_user)
+    handler.add_time(request.args, current_user)
     return jsonify("time added"), 200
 
 
