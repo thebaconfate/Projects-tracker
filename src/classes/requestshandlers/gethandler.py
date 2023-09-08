@@ -63,10 +63,13 @@ class GetHandler:
         ]
         return stages
 
-    def get_stage(self, project_id, stage_id, user):
+    def get_stage(self, payload, user):
         schema = StageSchema()
+        stage = schema.load(
+            payload, partial=("last_updated", "price", "days", "seconds")
+        )
         with DatabaseInterface() as db:
-            retrieved_stage = db.get_stage(project_id, stage_id, user.id)
+            retrieved_stage = db.get_stage(stage.project_id, stage.id, user.id)
             return schema.dump(
                 Stage(
                     id=retrieved_stage[0],

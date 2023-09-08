@@ -96,19 +96,21 @@ def create_stage():
     return jsonify("stage_added"), 200
 
 
-@bp.route("/stage", methods=["GET", "PUT"])
+@bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
 def get_stage():
     # * gets information about a stage from a project
-    project_id = request.args.get("project_id")
-    stage_id = request.args.get("id")
     if request.method == "GET":
         handler = GetHandler()
-        result = handler.get_stage(project_id, stage_id, current_user)
+        result = handler.get_stage(request.args, current_user)
         return result, 200
     elif request.method == "PUT":
         handler = Puthandler()
-        result = handler.update_stage(project_id, stage_id, request.args, current_user)
+        result = handler.update_stage(request.args, current_user)
+        return result, 200
+    elif request.method == "POST":
+        handler = Posthandler()
+        result = handler.create_stage(request.args, current_user)
         return result, 200
 
 
