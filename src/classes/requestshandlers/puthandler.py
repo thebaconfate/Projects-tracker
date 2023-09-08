@@ -37,9 +37,9 @@ class Puthandler:
                 last_updated = datetime.utcnow().strftime(self.timeformat)
                 db.update_stage_last_updated(stage.id, last_updated)
             case _:
-                logging.error(
+                '''logging.error(
                     f"invalid payload key:{key} to update stage value: {value}"
-                )
+                )'''
                 raise InputException("invalid payload to update stage")
 
     def update_stage(self, project_id, stage_id, payload, user):
