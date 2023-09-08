@@ -45,7 +45,8 @@ def register():
 @bp.post("/login/", strict_slashes=False)
 def login():
     handler = Posthandler()
-    result = handler.login(request.json)
+    print(request.args)
+    result = handler.login(request.args.get("email"), request.args.get("password"))
     return jsonify(result), 200
 
 
@@ -76,11 +77,11 @@ def get_projects():
 
 
 # * gets all stages from a project
-@bp.get("/project:<project_id>/stages:all")
+@bp.get("/project")
 @login_required
-def get_stages(project_id):
+def get_stages():
     handler = GetHandler()
-    result = handler.get_stages(project_id, current_user)
+    result = handler.get_stages(request.args.get("project_id"), current_user)
     return result, 200
 
 

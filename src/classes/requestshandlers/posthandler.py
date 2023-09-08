@@ -29,9 +29,9 @@ class Posthandler(GetHandler):
         user.id = retrieved_user[0]
         login_user(user)
 
-    def login(self, payload):
+    def login(self, email, password):
         schema = UserSchema()
-        user = schema.load(payload, partial=("id", "name"))
+        user = schema.load({'email': email, 'password': password}, partial=("id", "name"))
         with DatabaseInterface() as db:
             retrieved_user = db.get_user_by_mail(user.email)
         try:
