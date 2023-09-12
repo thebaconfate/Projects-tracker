@@ -1,3 +1,4 @@
+from datetime import timedelta
 from src.classes.models.project import Project
 from src.classes.models.stage import Stage
 from src.classes.schemas.projectschema import ProjectSchema
@@ -65,8 +66,9 @@ class GetHandler:
 
     def get_stage(self, payload, user):
         schema = StageSchema()
+        print(type(payload.get("id")))
         stage = schema.load(
-            payload, partial=("last_updated", "price", "days", "seconds")
+            payload, partial=("name","last_updated", "price", "time")
         )
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage(stage.project_id, stage.id, user.id)
@@ -75,8 +77,7 @@ class GetHandler:
                     id=retrieved_stage[0],
                     name=retrieved_stage[1],
                     project_id=retrieved_stage[2],
-                    days=retrieved_stage[3],
-                    seconds=retrieved_stage[4],
+                    time=timedelta(days=retrieved_stage[3],seconds=retrieved_stage[4]),
                     price=retrieved_stage[5],
                     last_updated=retrieved_stage[6],
                 )

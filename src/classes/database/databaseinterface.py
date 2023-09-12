@@ -18,6 +18,7 @@ class DatabaseInterface:
         self.mysql.close()
 
     def __cursor(self):
+        # TODO insert dictionary=True in the arguments of cursor()
         return self.mysql.cursor()
 
     """ALL INSERT QUERIES"""

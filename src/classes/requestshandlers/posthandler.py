@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.classes.models.user import User
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.projectschema import ProjectSchema
@@ -63,8 +63,9 @@ class Posthandler(GetHandler):
         schema = StageSchema()
         stage = schema.load(
             payload,
-            partial=("id", "last_updated", "price", "days", "seconds"),
+            partial=("id", "last_updated", "price", "time"),
         )
+        print(stage.time)
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage_by_name(
                 stage.name, stage.project_id, user.id
@@ -74,8 +75,8 @@ class Posthandler(GetHandler):
                 db.insert_stage(
                     stage.name,
                     stage.project_id,
-                    stage.days,
-                    stage.seconds,
+                    stage.time.days,
+                    stage.time.seconds,
                     stage.price,
                     stage.last_updated,
                 )

@@ -86,7 +86,7 @@ def get_stages():
 
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
-def get_stage():
+def stage():
     # * gets information about a stage from a project
     match request.method:
         case "GET":
@@ -99,8 +99,8 @@ def get_stage():
             return result, 200
         case "POST":
             handler = Posthandler()
-            result = handler.create_stage(request.args, current_user)
-            return result, 200
+            handler.create_stage(request.args, current_user)
+            return "stage created", 200
 
 
 @bp.put("/time")

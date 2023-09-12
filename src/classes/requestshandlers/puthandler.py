@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import logging
 from src.classes.models.project import Project
 from src.classes.schemas.projectschema import ProjectSchema
@@ -26,15 +26,11 @@ class Puthandler:
             case "price":
                 db.update_stage_price(stage.id, value)
             case "time":
-                for key, value in value.items():
-                    self.switch_stage(db, stage, key, value, user)
-            case "days":
-                db.update_stage_days(stage.id, value)
+                print(type(value))
+                time = value
                 last_updated = datetime.utcnow().strftime(self.timeformat)
-                db.update_stage_last_updated(stage.id, last_updated)
-            case "seconds":
-                db.update_stage_seconds(stage.id, value)
-                last_updated = datetime.utcnow().strftime(self.timeformat)
+                db.update_stage_days(stage.id, time.days)
+                db.update_stage_seconds(stage.id, time.seconds)
                 db.update_stage_last_updated(stage.id, last_updated)
             case _:
                 """logging.error(
@@ -46,13 +42,7 @@ class Puthandler:
         schema = StageSchema()
         stage = schema.load(
             payload,
-            partial=(
-                "last_updated",
-                "price",
-                "days",
-                "seconds",
-                "name",
-            ),
+            partial=("name", "last_updated", "price", "time"),
         )
         with DatabaseInterface() as db:
             old_stage = db.get_stage(stage.project_id, stage.id, user.id)
@@ -61,24 +51,26 @@ class Puthandler:
                     id=old_stage[0],
                     name=old_stage[1],
                     project_id=old_stage[2],
-                    days=old_stage[3],
-                    seconds=old_stage[4],
+                    time=timedelta(days=old_stage[3], seconds=old_stage[4]),
                     price=old_stage[5],
                     last_updated=old_stage[6],
                 )
-                for key, value in payload.items():
-                    try:
-                        self.switch_stage(db, old_stage, key, value, user)
-                    except InputException:
-                        continue
+                print(payload.keys())
+                for key in payload.keys():
+                    if key != "id" or key != "project_id":
+                        try:
+                            self.switch_stage(
+                                db, old_stage, key, stage.__getattribute__(key), user
+                            )
+                        except InputException:
+                            continue
                 stage = db.get_stage(stage.project_id, stage.id, user.id)
                 return schema.dump(
                     Stage(
                         id=stage[0],
                         name=stage[1],
                         project_id=stage[2],
-                        days=stage[3],
-                        seconds=stage[4],
+                        time=timedelta(days=stage[3], seconds=stage[4]),
                         price=stage[5],
                         last_updated=stage[6],
                     )
@@ -112,13 +104,17 @@ class Puthandler:
                     id=stored_stage[0],
                     name=stored_stage[1],
                     project_id=stored_stage[2],
-                    days=stored_stage[3],
-                    seconds=stored_stage[4],
+                    time=timedelta(days=stored_stage[3], seconds=stored_stage[4]),
                     price=stored_stage[5],
                     last_updated=stored_stage[6],
                 )
                 stored_stage.merge(stage)
-                db.store_stage(stored_stage.id, stored_stage.days, stored_stage.seconds, stored_stage.get_last_updated())
+                db.store_stage(
+                    stored_stage.id,
+                    stored_stage.days,
+                    stored_stage.seconds,
+                    stored_stage.get_last_updated(),
+                )
         return schema.dump(stored_stage)
 
     def switch_project(self, db, key, value, project_id, user):
