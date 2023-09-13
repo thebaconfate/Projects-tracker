@@ -136,4 +136,6 @@ class Puthandler:
                     except InputException:
                         continue
                 project = db.get_project(project_id, user)
-        return schema.dump(Project(id=project[0], name=project[1], owner_id=project[2]))
+                return schema.dump(Project(**project))
+            else:
+                raise InputException('Invalid project id')
