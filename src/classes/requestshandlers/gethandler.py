@@ -21,7 +21,7 @@ class GetHandler:
             return None
 
     def get_projects(self, user):
-        """Retrieves all projects in a list of dictionaries with the project id and name."""
+        """Retrieves all projects given the user id and returns a list of dictionaries."""
         with DatabaseInterface() as db:
             projects = db.get_projects(user.id)
         return projects
@@ -64,6 +64,7 @@ class GetHandler:
             price_per_hr = stage["price"]
             if price_per_hr == 0:
                 continue
-            result += price_per_hr * stage["days"] * 24
-            result += stage["seconds"] // 60 // 15 * price_per_hr / 4
+            else:
+                result += price_per_hr * stage["days"] * 24
+                result += stage["seconds"] // 60 // 15 * price_per_hr / 4
         return {"total value": result}

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from src.classes.models.user import User
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.projectschema import ProjectSchema
@@ -9,11 +9,8 @@ from src.classes.customerrors.inputerror import InputException
 from flask_login import login_user, logout_user
 
 
-"""class to delegate requests that add, and update data."""
-
-
 class Posthandler(GetHandler):
-    # verifies the structure of the payload
+    """class to delegate requests that add, and update data."""
 
     def register(self, payload):
         schema = UserSchema()
