@@ -71,7 +71,7 @@ def create_project():
 def get_projects():
     handler = GetHandler()
     results = handler.get_projects(current_user)
-    return results, 200
+    return jsonify(results), 200
 
 
 # * gets all stages from a project

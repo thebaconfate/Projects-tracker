@@ -35,12 +35,9 @@ class GetHandler:
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
-        print("getting stages")
         with DatabaseInterface() as db:
-            print("retrieving")
             retrieved_stages = db.get_stages(project_id, user.id)
             for stage in retrieved_stages:
-                print(stage)
                 stage["last_updated"] = stage["last_updated"].strftime(
                     "%Y-%m-%dT%H:%M:%S"
                 )

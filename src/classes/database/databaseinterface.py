@@ -88,16 +88,12 @@ class DatabaseInterface:
         return user
 
     def get_stages(self, project_id, user_id):
-        print("getting stages")
         cursor = self.__cursor()
-        print(cursor)
         cursor.execute(
             """SELECT stages.id, stages.name, project_id, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;""",
             (project_id, user_id),
         )
-        print("exec select")
         stages = cursor.fetchall()
-        print(stages)
         return stages
 
     def get_time_and_price(self, project_id, user_id):
