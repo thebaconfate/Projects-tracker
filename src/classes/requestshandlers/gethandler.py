@@ -7,11 +7,12 @@ from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.userschema import UserSchema
 import json
 
-""" class to delegate requests that fetch data to."""
-
 
 class GetHandler:
+    """class to delegate get requests to."""
+
     def fetch_user(self, user_id):
+        """returns dictionary with user details given a user_id. Used for post initial authentication"""
         with DatabaseInterface() as db:
             retrieved_user = db.get_user(user_id)
         if retrieved_user is not None:
@@ -21,33 +22,23 @@ class GetHandler:
             return None
 
     def get_projects(self, user):
+        """Retrieves all projects in a list of dictionaries with the project id and name."""
         with DatabaseInterface() as db:
-            retrieved_projects = db.get_projects(user.id)
-        projects = [
-            {
-                "id": project[0],
-                "name": project[1],
-            }
-            for project in retrieved_projects
-        ]
+            projects = db.get_projects(user.id)
         return projects
 
     def get_project(self, project_id, user):
         schema = ProjectSchema()
         with DatabaseInterface() as db:
             retrieved_project = db.get_project(project_id, user.id)
-        project = Project(
-            id=retrieved_project[0],
-            name=retrieved_project[1],
-            owner_id=retrieved_project[2],
-        )
+        project = Project(**retrieved_project)
         return schema.dump(project)
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
-        print('getting stages')
+        print("getting stages")
         with DatabaseInterface() as db:
-            print('retrieving')
+            print("retrieving")
             retrieved_stages = db.get_stages(project_id, user.id)
             print(retrieved_stages)
             for stage in retrieved_stages:

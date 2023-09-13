@@ -5,7 +5,6 @@ import mysql.connector
 # TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs more found at: https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-cursor.html
 class DatabaseInterface:
     def __enter__(self):
-        print("entering")
         self.mysql = mysql.connector.connect(
             host=os.getenv("MYSQLHOST"),
             user=os.getenv("MYSQLUSER"),
@@ -13,14 +12,12 @@ class DatabaseInterface:
             database=os.getenv("MYSQLDATABASE"),
             port=os.getenv("MYSQLPORT"),
         )
-        print("connected")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.mysql.close()
 
     def __cursor(self):
-        # TODO insert dictionary=True in the arguments of cursor()
         return self.mysql.cursor(dictionary=True)
 
     """ALL INSERT QUERIES"""
@@ -80,7 +77,6 @@ class DatabaseInterface:
             """SELECT id, name, email, password FROM users WHERE id = %s""", (user_id,)
         )
         user = cursor.fetchone()
-        print(user)
         return user
 
     def get_user_by_mail(self, email):
@@ -89,7 +85,6 @@ class DatabaseInterface:
             """SELECT id, name, email, password FROM users WHERE email = %s""", (email,)
         )
         user = cursor.fetchone()
-        print(user)
         return user
 
     def get_stages(self, project_id, user_id):

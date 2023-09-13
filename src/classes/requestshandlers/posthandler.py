@@ -35,12 +35,7 @@ class Posthandler(GetHandler):
         with DatabaseInterface() as db:
             retrieved_user = db.get_user_by_mail(user.email)
         try:
-            registered_user = User(
-                id=retrieved_user[0],
-                name=retrieved_user[1],
-                email=retrieved_user[2],
-                password=retrieved_user[3],
-            )
+            registered_user = User(**retrieved_user)
             if registered_user.check_password(user.password):
                 login_user(registered_user)
         except Exception:
