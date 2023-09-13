@@ -16,14 +16,7 @@ class GetHandler:
             retrieved_user = db.get_user(user_id)
         if retrieved_user is not None:
             schema = UserSchema()
-            return schema.load(
-                {
-                    "id": retrieved_user[0],
-                    "name": retrieved_user[1],
-                    "email": retrieved_user[2],
-                    "password": retrieved_user[3],
-                }
-            )
+            return schema.load(retrieved_user)
         else:
             return None
 
@@ -52,8 +45,11 @@ class GetHandler:
 
     # * get all stages from a user
     def get_stages(self, project_id, user):
+        print('getting stages')
         with DatabaseInterface() as db:
+            print('retrieving')
             retrieved_stages = db.get_stages(project_id, user.id)
+            print(retrieved_stages)
             for stage in retrieved_stages:
                 print(stage[3])
                 print(type(stage[3]))
@@ -62,7 +58,7 @@ class GetHandler:
                 "id": stage[0],
                 "name": stage[1],
                 "project_id": stage[2],
-                "last_updated": stage[3].strftime("%Y-%m-%dT%H:%M:%S")
+                "last_updated": stage[3].strftime("%Y-%m-%dT%H:%M:%S"),
             }
             for stage in retrieved_stages
         ]

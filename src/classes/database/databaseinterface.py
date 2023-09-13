@@ -5,6 +5,7 @@ import mysql.connector
 # TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs more found at: https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-cursor.html
 class DatabaseInterface:
     def __enter__(self):
+        print("entering")
         self.mysql = mysql.connector.connect(
             host=os.getenv("MYSQLHOST"),
             user=os.getenv("MYSQLUSER"),
@@ -12,6 +13,7 @@ class DatabaseInterface:
             database=os.getenv("MYSQLDATABASE"),
             port=os.getenv("MYSQLPORT"),
         )
+        print("connected")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -19,7 +21,7 @@ class DatabaseInterface:
 
     def __cursor(self):
         # TODO insert dictionary=True in the arguments of cursor()
-        return self.mysql.cursor()
+        return self.mysql.cursor(dictionary=True)
 
     """ALL INSERT QUERIES"""
 
@@ -78,6 +80,7 @@ class DatabaseInterface:
             """SELECT id, name, email, password FROM users WHERE id = %s""", (user_id,)
         )
         user = cursor.fetchone()
+        print(user)
         return user
 
     def get_user_by_mail(self, email):
@@ -86,15 +89,20 @@ class DatabaseInterface:
             """SELECT id, name, email, password FROM users WHERE email = %s""", (email,)
         )
         user = cursor.fetchone()
+        print(user)
         return user
 
     def get_stages(self, project_id, user_id):
+        print('getting stages')
         cursor = self.__cursor()
+        print(cursor)
         cursor.execute(
             """SELECT stages.id, stages.name, project_id, last_updated FROM ((stages LEFT JOIN projects ON projects.id = stages.project_id) LEFT JOIN users ON projects.owner_id = users.id) WHERE projects.id = %s AND users.id = %s ORDER BY stages.id ASC;""",
             (project_id, user_id),
         )
+        print("exec select")
         stages = cursor.fetchall()
+        print(stages)
         return stages
 
     def get_time_and_price(self, project_id, user_id):

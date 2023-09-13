@@ -6,7 +6,7 @@ from src.classes.requestshandlers.inithandler import Inithandler
 from src.classes.requestshandlers.puthandler import Puthandler
 from src.classes.requestshandlers.posthandler import Posthandler
 from src.classes.errorhandler import ErrorHandler
-from src.setup import login_manager, tz
+from src.setup import login_manager
 
 bp = Blueprint("auth", __name__)
 
@@ -78,6 +78,7 @@ def get_projects():
 @bp.get("/project")
 @login_required
 def get_stages():
+    print('getting stages')
     handler = GetHandler()
     project_id = request.args.get("project_id")
     result = handler.get_stages(project_id, current_user)
@@ -120,12 +121,13 @@ def calc_add_time():
     return jsonify(result), 200
 
 
+# TODO refactor this to be put method
 @bp.get("/project:<project_id>")
 @login_required
 def update_project(project_id):
     handler = Puthandler()
     handler.update_project(project_id, request.json, current_user)
-    return "project updated", 200
+    return jsonify("project updated"), 200
 
 
 @bp.delete("/project:<project_id>/stage:<stage_id>")
