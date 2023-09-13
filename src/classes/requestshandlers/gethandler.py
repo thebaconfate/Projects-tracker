@@ -1,10 +1,11 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from src.classes.models.project import Project
 from src.classes.models.stage import Stage
 from src.classes.schemas.projectschema import ProjectSchema
 from src.classes.schemas.stageschema import StageSchema
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.userschema import UserSchema
+import json
 
 """ class to delegate requests that fetch data to."""
 
@@ -53,12 +54,15 @@ class GetHandler:
     def get_stages(self, project_id, user):
         with DatabaseInterface() as db:
             retrieved_stages = db.get_stages(project_id, user.id)
+            for stage in retrieved_stages:
+                print(stage[3])
+                print(type(stage[3]))
         stages = [
             {
                 "id": stage[0],
                 "name": stage[1],
                 "project_id": stage[2],
-                "last_updated": stage[3],
+                "last_updated": stage[3].strftime("%Y-%m-%dT%H:%M:%S")
             }
             for stage in retrieved_stages
         ]
@@ -66,10 +70,7 @@ class GetHandler:
 
     def get_stage(self, payload, user):
         schema = StageSchema()
-        print(type(payload.get("id")))
-        stage = schema.load(
-            payload, partial=("name","last_updated", "price", "time")
-        )
+        stage = schema.load(payload, partial=("name", "last_updated", "price", "time"))
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage(stage.project_id, stage.id, user.id)
             return schema.dump(
@@ -77,7 +78,7 @@ class GetHandler:
                     id=retrieved_stage[0],
                     name=retrieved_stage[1],
                     project_id=retrieved_stage[2],
-                    time=timedelta(days=retrieved_stage[3],seconds=retrieved_stage[4]),
+                    time=timedelta(days=retrieved_stage[3], seconds=retrieved_stage[4]),
                     price=retrieved_stage[5],
                     last_updated=retrieved_stage[6],
                 )

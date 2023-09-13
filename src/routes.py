@@ -81,7 +81,7 @@ def get_stages():
     handler = GetHandler()
     project_id = request.args.get("project_id")
     result = handler.get_stages(project_id, current_user)
-    return result, 200
+    return jsonify(result), 200
 
 
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
@@ -92,7 +92,7 @@ def stage():
         case "GET":
             handler = GetHandler()
             result = handler.get_stage(request.args, current_user)
-            return result, 200
+            return jsonify(result), 200
         case "PUT":
             handler = Puthandler()
             result = handler.update_stage(request.args, current_user)
