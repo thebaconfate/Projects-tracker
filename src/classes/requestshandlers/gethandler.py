@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from src.classes.models.project import Project
 from src.classes.models.stage import Stage
 from src.classes.schemas.projectschema import ProjectSchema
