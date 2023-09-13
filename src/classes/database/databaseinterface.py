@@ -88,7 +88,7 @@ class DatabaseInterface:
         return user
 
     def get_stages(self, project_id, user_id):
-        print('getting stages')
+        print("getting stages")
         cursor = self.__cursor()
         print(cursor)
         cursor.execute(
@@ -163,13 +163,6 @@ class DatabaseInterface:
 
     """UPDATE STAGE"""
 
-    def store_stage(self, stage_id, new_days, new_seconds, new_last_updated):
-        cursor = self.__cursor()
-        cursor.execute(
-            """UPDATE stages SET days = %s, seconds = %s, last_updated = %s WHERE id = %s""",
-            (new_days, new_seconds, new_last_updated, stage_id),
-        )
-        self.mysql.commit()
 
     def update_stage_name(self, stage_id, new_name):
         cursor = self.__cursor()
@@ -204,6 +197,16 @@ class DatabaseInterface:
         cursor.execute(
             """UPDATE stages SET last_updated = %s WHERE id = %s""",
             (new_last_updated, stage_id),
+        )
+        self.mysql.commit()
+
+    def update_stage_days_seconds_last_updated(
+        self, stage_id, new_days, new_seconds, new_last_updated
+    ):
+        cursor = self.__cursor()
+        cursor.execute(
+            """UPDATE stages SET days = %s, seconds = %s, last_updated = %s WHERE id = %s""",
+            (new_days, new_seconds, new_last_updated, stage_id),
         )
         self.mysql.commit()
 

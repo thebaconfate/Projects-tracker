@@ -84,7 +84,7 @@ class Puthandler:
                 )
                 stored_stage = Stage(**stored_stage)
                 stored_stage.merge(stage)
-                db.store_stage(
+                db.update_stage_days_seconds_last_updated(
                     stored_stage.id,
                     stored_stage.time.days,
                     stored_stage.time.seconds,

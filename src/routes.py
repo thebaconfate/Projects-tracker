@@ -75,7 +75,7 @@ def get_projects():
 
 
 # * gets all stages from a project
-@bp.route("/project", method=["GET", "PUT"])
+@bp.route("/project", methods=["GET", "PUT"])
 @login_required
 def project():
     match request.method:
