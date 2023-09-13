@@ -5,7 +5,6 @@ from src.classes.schemas.projectschema import ProjectSchema
 from src.classes.schemas.stageschema import StageSchema
 from src.classes.database.databaseinterface import DatabaseInterface
 from src.classes.schemas.userschema import UserSchema
-import json
 
 
 class GetHandler:
@@ -40,36 +39,22 @@ class GetHandler:
         with DatabaseInterface() as db:
             print("retrieving")
             retrieved_stages = db.get_stages(project_id, user.id)
-            print(retrieved_stages)
             for stage in retrieved_stages:
-                print(stage[3])
-                print(type(stage[3]))
-        stages = [
-            {
-                "id": stage[0],
-                "name": stage[1],
-                "project_id": stage[2],
-                "last_updated": stage[3].strftime("%Y-%m-%dT%H:%M:%S"),
-            }
-            for stage in retrieved_stages
-        ]
-        return stages
+                print(stage)
+                stage["last_updated"] = stage["last_updated"].strftime(
+                    "%Y-%m-%dT%H:%M:%S"
+                )
+        return retrieved_stages
 
     def get_stage(self, payload, user):
         schema = StageSchema()
         stage = schema.load(payload, partial=("name", "last_updated", "price", "time"))
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage(stage.project_id, stage.id, user.id)
-            return schema.dump(
-                Stage(
-                    id=retrieved_stage[0],
-                    name=retrieved_stage[1],
-                    project_id=retrieved_stage[2],
-                    time=timedelta(days=retrieved_stage[3], seconds=retrieved_stage[4]),
-                    price=retrieved_stage[5],
-                    last_updated=retrieved_stage[6],
-                )
-            )
+        retrieved_stage["time"] = timedelta(
+            retrieved_stage.pop("days"), retrieved_stage.pop("seconds")
+        )
+        return schema.dump(Stage(**retrieved_stage))
 
     def calc(self, project_id, user):
         with DatabaseInterface() as db:
