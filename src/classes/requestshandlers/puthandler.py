@@ -8,10 +8,9 @@ from src.classes.customerrors.inputerror import InputException
 from src.classes.schemas.stageschema import StageSchema
 
 
-""" class to handle put requests"""
-
-
 class Puthandler:
+    """class to handle requests to update values"""
+
     def __init__(self):
         self.timeformat = "%Y-%m-%d %H:%M:%S"
 
@@ -26,17 +25,15 @@ class Puthandler:
             case "price":
                 db.update_stage_price(stage.id, value)
             case "time":
-                print(type(value))
-                time = value
                 last_updated = datetime.utcnow().strftime(self.timeformat)
-                db.update_stage_days(stage.id, time.days)
-                db.update_stage_seconds(stage.id, time.seconds)
+                db.update_stage_days(stage.id, value.days)
+                db.update_stage_seconds(stage.id, value.seconds)
                 db.update_stage_last_updated(stage.id, last_updated)
             case _:
                 """logging.error(
                     f"invalid payload key:{key} to update stage value: {value}"
                 )"""
-                raise InputException("invalid payload to update stage")
+                raise InputException("invalid field to update stage")
 
     def update_stage(self, payload, user):
         schema = StageSchema()
