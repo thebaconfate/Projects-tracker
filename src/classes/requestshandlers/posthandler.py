@@ -57,7 +57,6 @@ class Posthandler(GetHandler):
             payload,
             partial=("id", "last_updated", "price", "time"),
         )
-        print(stage.time)
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage_by_name(
                 stage.name, stage.project_id, user.id

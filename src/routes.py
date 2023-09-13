@@ -79,16 +79,17 @@ def get_projects():
 @login_required
 def project():
     match request.method:
-        case 'GET':
+        case "GET":
             handler = GetHandler()
             project_id = request.args.get("project_id")
             result = handler.get_stages(project_id, current_user)
             return jsonify(result), 200
-        case 'PUT': 
+        case "PUT":
             handler = Puthandler()
             project_id = request.args.get(project_id)
             result = handler.update_project(project_id, request.json, current_user)
             return jsonify(result), 200
+
 
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
@@ -124,8 +125,6 @@ def calc_time():
     project_id = request.args.get("project_id")
     result = handler.calc(project_id, current_user)
     return jsonify(result), 200
-
-
 
 
 @bp.delete("/project:<project_id>/stage:<stage_id>")

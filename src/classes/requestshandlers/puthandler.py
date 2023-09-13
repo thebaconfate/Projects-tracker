@@ -111,7 +111,7 @@ class Puthandler:
                 schema = ProjectSchema()
                 project = schema.load(project)
                 for key in payload.keys():
-                    if key != 'id' or key != 'project_id':
+                    if key != "id" or key != "project_id":
                         try:
                             self.switch_project(db, key, payload[key], project_id, user)
                         except InputException:
