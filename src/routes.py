@@ -75,15 +75,20 @@ def get_projects():
 
 
 # * gets all stages from a project
-@bp.get("/project")
+@bp.route("/project", method=["GET", "PUT"])
 @login_required
-def get_stages():
-    print('getting stages')
-    handler = GetHandler()
-    project_id = request.args.get("project_id")
-    result = handler.get_stages(project_id, current_user)
-    return jsonify(result), 200
-
+def project():
+    match request.method:
+        case 'GET':
+            handler = GetHandler()
+            project_id = request.args.get("project_id")
+            result = handler.get_stages(project_id, current_user)
+            return jsonify(result), 200
+        case 'PUT': 
+            handler = Puthandler()
+            project_id = request.args.get(project_id)
+            result = handler.update_project(project_id, request.json, current_user)
+            return jsonify(result), 200
 
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
@@ -114,20 +119,13 @@ def add_time():
 
 @bp.get("/calc")
 @login_required
-def calc_add_time():
+def calc_time():
     handler = GetHandler()
     project_id = request.args.get("project_id")
     result = handler.calc(project_id, current_user)
     return jsonify(result), 200
 
 
-# TODO refactor this to be put method
-@bp.get("/project:<project_id>")
-@login_required
-def update_project(project_id):
-    handler = Puthandler()
-    handler.update_project(project_id, request.json, current_user)
-    return jsonify("project updated"), 200
 
 
 @bp.delete("/project:<project_id>/stage:<stage_id>")

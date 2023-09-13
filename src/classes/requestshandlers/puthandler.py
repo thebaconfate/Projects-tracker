@@ -44,15 +44,10 @@ class Puthandler:
         with DatabaseInterface() as db:
             old_stage = db.get_stage(stage.project_id, stage.id, user.id)
             if old_stage is not None:
-                old_stage = Stage(
-                    id=old_stage[0],
-                    name=old_stage[1],
-                    project_id=old_stage[2],
-                    time=timedelta(days=old_stage[3], seconds=old_stage[4]),
-                    price=old_stage[5],
-                    last_updated=old_stage[6],
+                old_stage["time"] = timedelta(
+                    days=old_stage.pop("days"), seconds=old_stage.pop("seconds")
                 )
-                print(payload.keys())
+                old_stage = Stage(**old_stage)
                 for key in payload.keys():
                     if key != "id" or key != "project_id":
                         try:
@@ -62,25 +57,14 @@ class Puthandler:
                         except InputException:
                             continue
                 stage = db.get_stage(stage.project_id, stage.id, user.id)
-                return schema.dump(
-                    Stage(
-                        id=stage[0],
-                        name=stage[1],
-                        project_id=stage[2],
-                        time=timedelta(days=stage[3], seconds=stage[4]),
-                        price=stage[5],
-                        last_updated=stage[6],
-                    )
+                stage["time"] = timedelta(
+                    days=stage.pop("days"), seconds=stage.pop("seconds")
                 )
+                return schema.dump(Stage(**stage))
             else:
                 raise InputException("""Couldn't find stage""")
 
     def add_time(self, payload, user):
-        if "time" in payload:
-            payload = {
-                "days": payload["time"]["days"],
-                "seconds": payload["time"]["seconds"],
-            }
         schema = StageSchema()
         stage = schema.load(
             payload,
@@ -89,28 +73,22 @@ class Puthandler:
                 "project_id",
                 "last_updated",
                 "price",
-                "days",
-                "seconds",
                 "name",
             ),
         )
         with DatabaseInterface() as db:
             stored_stage = db.get_stage(stage.project_id, stage.id, user.id)
             if stored_stage is not None:
-                stored_stage = Stage(
-                    id=stored_stage[0],
-                    name=stored_stage[1],
-                    project_id=stored_stage[2],
-                    time=timedelta(days=stored_stage[3], seconds=stored_stage[4]),
-                    price=stored_stage[5],
-                    last_updated=stored_stage[6],
+                stored_stage["time"] = timedelta(
+                    days=stored_stage.pop("days"), seconds=stored_stage.pop("seconds")
                 )
+                stored_stage = Stage(**stored_stage)
                 stored_stage.merge(stage)
                 db.store_stage(
                     stored_stage.id,
-                    stored_stage.days,
-                    stored_stage.seconds,
-                    stored_stage.get_last_updated(),
+                    stored_stage.time.days,
+                    stored_stage.time.seconds,
+                    stored_stage.last_updated,
                 )
         return schema.dump(stored_stage)
 
@@ -130,12 +108,15 @@ class Puthandler:
         with DatabaseInterface() as db:
             project = db.get_project(project_id, user)
             if project is not None:
-                for key, value in payload.items():
-                    try:
-                        self.switch_project(db, key, value, project_id, user)
-                    except InputException:
-                        continue
+                schema = ProjectSchema()
+                project = schema.load(project)
+                for key in payload.keys():
+                    if key != 'id' or key != 'project_id':
+                        try:
+                            self.switch_project(db, key, payload[key], project_id, user)
+                        except InputException:
+                            continue
                 project = db.get_project(project_id, user)
                 return schema.dump(Project(**project))
             else:
-                raise InputException('Invalid project id')
+                raise InputException("Invalid project id")
