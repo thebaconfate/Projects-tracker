@@ -6,7 +6,7 @@ from src.classes.requestshandlers.inithandler import Inithandler
 from src.classes.requestshandlers.puthandler import Puthandler
 from src.classes.requestshandlers.posthandler import Posthandler
 from src.classes.errorhandler import ErrorHandler
-from src.setup import login_manager, tz
+from src.setup import login_manager
 
 bp = Blueprint("auth", __name__)
 
@@ -71,36 +71,43 @@ def create_project():
 def get_projects():
     handler = GetHandler()
     results = handler.get_projects(current_user)
-    return results, 200
+    return jsonify(results), 200
 
 
 # * gets all stages from a project
-@bp.get("/project")
+@bp.route("/project", methods=["GET", "PUT"])
 @login_required
-def get_stages():
-    handler = GetHandler()
-    project_id = request.args.get("project_id")
-    result = handler.get_stages(project_id, current_user)
-    return result, 200
+def project():
+    match request.method:
+        case "GET":
+            handler = GetHandler()
+            project_id = request.args.get("project_id")
+            result = handler.get_stages(project_id, current_user)
+            return jsonify(result), 200
+        case "PUT":
+            handler = Puthandler()
+            project_id = request.args.get(project_id)
+            result = handler.update_project(project_id, request.json, current_user)
+            return jsonify(result), 200
 
 
 @bp.route("/stage", methods=["GET", "PUT", "POST"])
 @login_required
-def get_stage():
+def stage():
     # * gets information about a stage from a project
     match request.method:
         case "GET":
             handler = GetHandler()
             result = handler.get_stage(request.args, current_user)
-            return result, 200
+            return jsonify(result), 200
         case "PUT":
             handler = Puthandler()
             result = handler.update_stage(request.args, current_user)
             return result, 200
         case "POST":
             handler = Posthandler()
-            result = handler.create_stage(request.args, current_user)
-            return result, 200
+            handler.create_stage(request.args, current_user)
+            return "stage created", 200
 
 
 @bp.put("/time")
@@ -113,19 +120,11 @@ def add_time():
 
 @bp.get("/calc")
 @login_required
-def calc_add_time():
+def calc_time():
     handler = GetHandler()
     project_id = request.args.get("project_id")
     result = handler.calc(project_id, current_user)
     return jsonify(result), 200
-
-
-@bp.get("/project:<project_id>")
-@login_required
-def update_project(project_id):
-    handler = Puthandler()
-    handler.update_project(project_id, request.json, current_user)
-    return "project updated", 200
 
 
 @bp.delete("/project:<project_id>/stage:<stage_id>")

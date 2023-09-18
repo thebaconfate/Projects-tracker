@@ -2,7 +2,6 @@ import os
 import mysql.connector
 
 
-# TODO make the queries return dictionaries instead of tuples so it can be unpacked using **kwargs more found at: https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlconnection-cursor.html
 class DatabaseInterface:
     def __enter__(self):
         self.mysql = mysql.connector.connect(
@@ -18,7 +17,7 @@ class DatabaseInterface:
         self.mysql.close()
 
     def __cursor(self):
-        return self.mysql.cursor()
+        return self.mysql.cursor(dictionary=True)
 
     """ALL INSERT QUERIES"""
 
@@ -159,14 +158,6 @@ class DatabaseInterface:
 
     """UPDATE STAGE"""
 
-    def store_stage(self, stage_id, new_days, new_seconds, new_last_updated):
-        cursor = self.__cursor()
-        cursor.execute(
-            """UPDATE stages SET days = %s, seconds = %s, last_updated = %s WHERE id = %s""",
-            (new_days, new_seconds, new_last_updated, stage_id),
-        )
-        self.mysql.commit()
-
     def update_stage_name(self, stage_id, new_name):
         cursor = self.__cursor()
         cursor.execute(
@@ -200,6 +191,16 @@ class DatabaseInterface:
         cursor.execute(
             """UPDATE stages SET last_updated = %s WHERE id = %s""",
             (new_last_updated, stage_id),
+        )
+        self.mysql.commit()
+
+    def update_stage_days_seconds_last_updated(
+        self, stage_id, new_days, new_seconds, new_last_updated
+    ):
+        cursor = self.__cursor()
+        cursor.execute(
+            """UPDATE stages SET days = %s, seconds = %s, last_updated = %s WHERE id = %s""",
+            (new_days, new_seconds, new_last_updated, stage_id),
         )
         self.mysql.commit()
 

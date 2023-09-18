@@ -9,11 +9,8 @@ from src.classes.customerrors.inputerror import InputException
 from flask_login import login_user, logout_user
 
 
-"""class to delegate requests that add, and update data."""
-
-
 class Posthandler(GetHandler):
-    # verifies the structure of the payload
+    """class to delegate requests that add, and update data."""
 
     def register(self, payload):
         schema = UserSchema()
@@ -35,12 +32,7 @@ class Posthandler(GetHandler):
         with DatabaseInterface() as db:
             retrieved_user = db.get_user_by_mail(user.email)
         try:
-            registered_user = User(
-                id=retrieved_user[0],
-                name=retrieved_user[1],
-                email=retrieved_user[2],
-                password=retrieved_user[3],
-            )
+            registered_user = User(**retrieved_user)
             if registered_user.check_password(user.password):
                 login_user(registered_user)
         except Exception:
@@ -63,7 +55,7 @@ class Posthandler(GetHandler):
         schema = StageSchema()
         stage = schema.load(
             payload,
-            partial=("id", "last_updated", "price", "days", "seconds"),
+            partial=("id", "last_updated", "price", "time"),
         )
         with DatabaseInterface() as db:
             retrieved_stage = db.get_stage_by_name(
@@ -74,8 +66,8 @@ class Posthandler(GetHandler):
                 db.insert_stage(
                     stage.name,
                     stage.project_id,
-                    stage.days,
-                    stage.seconds,
+                    stage.time.days,
+                    stage.time.seconds,
                     stage.price,
                     stage.last_updated,
                 )
