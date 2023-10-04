@@ -3,7 +3,7 @@ __version__ = "0.1.0"
 import os
 from src.routes import bp
 from dotenv import load_dotenv
-from flask import Flask
+from fastapi import FastAPI
 from src.setup import login_manager, bcrypt
 
 login_manager.session_protection = "strong"
@@ -13,7 +13,7 @@ start_files = None
 
 
 def create_app():
-    app = Flask(__name__)
+    app = FastAPI()
     load_dotenv()
     app.secret_key = os.getenv('SECRET_KEY')
     '''if testing:
