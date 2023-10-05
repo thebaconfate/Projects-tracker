@@ -1,8 +1,7 @@
-from flask_login import UserMixin
-from src.setup import bcrypt
+from src.setup import auth
+from pydantic import BaseModel
 
-
-class User(UserMixin):
+class User(BaseModel):
     def __init__(
         self,
         password,
@@ -19,7 +18,7 @@ class User(UserMixin):
         return "<User(id={self.id!r}, name={self.name!r})>".format(self=self)
 
     def hash_password(self):
-        self.password = bcrypt.generate_password_hash(self.password)
+        self.password = auth.hash(self.password)
 
     def check_password(self, password):
-        return bcrypt.check_password_hash(self.password, password)
+        return auth.verify(password, self.password)

@@ -1,5 +1,3 @@
-from flask import Blueprint, jsonify, make_response, request
-from flask_login import login_required, current_user
 from src.classes.requestshandlers.gethandler import GetHandler
 from src.classes.requestshandlers.delhandler import Delhandler
 from src.classes.requestshandlers.inithandler import Inithandler

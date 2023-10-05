@@ -1,7 +1,6 @@
 from pytz import timezone
-from flask_login import LoginManager
-from flask_bcrypt import Bcrypt
+from passlib.context import CryptContext
 
-login_manager = LoginManager()
+
 tz = timezone("Europe/Brussels")
-bcrypt = Bcrypt()
+auth = CryptContext(schemes=["bcrypt"], deprecated="auto")
