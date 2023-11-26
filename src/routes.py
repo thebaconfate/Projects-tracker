@@ -1,34 +1,26 @@
-from src.classes.requestshandlers.gethandler import GetHandler
-from src.classes.requestshandlers.delhandler import Delhandler
-from src.classes.requestshandlers.inithandler import Inithandler
-from src.classes.requestshandlers.puthandler import Puthandler
-from src.classes.requestshandlers.posthandler import Posthandler
-from src.classes.errorhandler import ErrorHandler
-from src.setup import login_manager
+from typing import Annotated
+from fastapi import FastAPI
+from pydantic import BaseModel, EmailStr
+from src.classes.users.usermodels import UserRegister, UserLogin, UserLogout
+from src.setup import oauth2_scheme
 
-bp = Blueprint("auth", __name__)
+app = FastAPI()
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    handler = GetHandler()
-    return handler.fetch_user(user_id)
+@app.get("/")
+async def index():
+    return {"msg": "hello world"}
 
 
-# * error handler for error codes.
+@app.post("/user/register")
+async def register_user(user_register: UserRegister):
+    handler = Posthandler()
+    await handler.register(request.args)
+    return ("msg": "Added user")
 
 
-@bp.errorhandler(Exception)
-def internal_server_error(e):
-    return ErrorHandler().handle(e)
-
-
-@bp.errorhandler(500)
-def internal_server_error_500(e):
-    return make_response(jsonify({"msg": "unknown internal server error"}), 500)
-
-
-@bp.route("/")
+"""
+@app.route("/")
 def index():
     return jsonify({"msg": "hello world"}), 200
 
@@ -143,3 +135,4 @@ def delete_project(project_id):
 
 # TODO Add user authentication and authorization so only an admin can migrate projects and stages.
 # TODO Add user authentication so each user can only create edit and remove their own projects and stages.
+"""
