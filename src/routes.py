@@ -14,7 +14,7 @@ async def index():
 
 @app.post("/user/register")
 async def register_user(user_register: UserRegister):
-
+    
     return ("msg": "Added user")
 
 
