@@ -21,3 +21,18 @@ class DatabaseInterface:
 
     def __commit(self):
         self.mysql.commit()
+
+    def insert_user(self, name, email, password):
+        self.__cursor().execute(
+            """INSERT INTO users (name, email, password) VALUES (%s, %s, %s)""",
+            (name, email, password),
+        )
+        self.__commit()
+
+    def get_user_by_mail(self, email):
+        cursor = self.__cursor()
+        cursor.execute(
+            """SELECT id, name, email, password FROM users WHERE email = %s""", (email,)
+        )
+        user = cursor.fetchone()
+        return user

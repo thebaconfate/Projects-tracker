@@ -14,8 +14,7 @@ async def index():
 
 @app.post("/user/register")
 async def register_user(user_register: UserRegister):
-    handler = Posthandler()
-    await handler.register(request.args)
+
     return ("msg": "Added user")
 
 
