@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "projects-tracker"
+version = "2.0.0"
+description = "An api to track project done for clients as well as costs and payments"
+authors = ["Gérard Lichtert <gerard.lichtert@hotmail.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+packages = [
+    { include = "src", from = "." }
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.0"
+pydantic = "^2.6.4"
+DateTime = "^5.5"
+mock = "^5.1.0"
+pytest = "^8.1.1"
+pytz = "^2024.1"
+python-dotenv = "^1.0.1"
+mysql-connector-python = "^8.3.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+
+[tool.poetry.scripts]
+main = "src.__main__:start"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
