@@ -1,7 +1,11 @@
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from .routes.users import router as users_router
 
 app = FastAPI()
+load_dotenv(override=True)
+app.include_router(router=users_router)
 
 
 @app.get(path="/")
