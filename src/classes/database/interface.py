@@ -2,6 +2,8 @@ import os
 import mysql.connector.aio
 import logging
 
+from src.classes.errors.database import DatabaseConnectionError
+
 
 class DatabaseInterface:
 
@@ -34,7 +36,7 @@ class DatabaseInterface:
             logging.error(
                 f"Failed to connect to database at {self.host} with error message:\n {e}"
             )
-            raise Exception("Database error")
+            raise DatabaseConnectionError("Database error")
 
     async def __aenter__(self):
         await self.__connect()
@@ -51,8 +53,19 @@ class DatabaseInterface:
     async def __cursor(self):
         return await self.mysql.cursor(dictionary=True)
 
+    async def get_user_by_username(self, username, cursor=None):
+        if cursor is None:
+            cursor = await self.__cursor()
+        query = "SELECT * FROM users WHERE username = %s"
+        await cursor.execute(query, (username,))
+        return await cursor.fetchone()
+
     async def save_user(self, username, email, password):
         cursor = await self.__cursor()
-        query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
-        await cursor.execute(query, (username, email, password))
-        await self.mysql.commit()
+        if await self.get_user_by_username(username, cursor=cursor) is not None:
+            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+            await cursor.execute(query, (username, email, password))
+            await self.mysql.commit()
+        else:
+            logging.error(f"User tried to register with existing username {username}")
+            raise Exception("User already exists")
