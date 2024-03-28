@@ -6,7 +6,7 @@ from src.classes.database.interface import DatabaseInterface
 class TestDatabaseInterface:
 
     @pytest.fixture(autouse=True)
-    def mysql_patch(self):
+    def mock_connect(self):
         with patch(
             "mysql.connector.aio.connect", new_callable=AsyncMock
         ) as mock_connect:
@@ -37,6 +37,15 @@ class TestDatabaseInterface:
             assert mock_aenter.called
 
     @pytest.mark.asyncio
+    async def test_aenter_raises_exception(self, mock_connect, database_args):
+        # Configure mock to raise an exception when called
+        mock_connect.side_effect = Exception()
+        with pytest.raises(Exception):
+            async with DatabaseInterface(**database_args):
+                # This code should raise an exception during connection attempt
+                pass
+
+    @pytest.mark.asyncio
     async def test_aexit_called(self, database_interface_patch, database_args):
         """Test that the __aexit__ method is called when exiting the context manager"""
         with patch(
@@ -47,9 +56,9 @@ class TestDatabaseInterface:
             assert mock_aexit.called
 
     @pytest.mark.asyncio
-    async def test_database_interface(self, mysql_patch, database_args):
+    async def test_database_interface(self, mock_connect, database_args):
         """Test that the database interface creates a connection when calling __aenter__ and closes a connection when calling __aexit__ within the context manager"""
-        mock_connect = mysql_patch
+        mock_connect = mock_connect
         mock_connection = mock_connect.return_value
         async with DatabaseInterface(**database_args):
             # Test that connection is established
