@@ -94,19 +94,25 @@ class TestDatabaseInterface:
         assert result == expected_result
 
     @pytest.mark.asyncio
-    async def test_save_user(self, mock_connect, database_args):
+    async def test_save_user(self, mock_connect, database_args, test_user):
         """Test that the save_user method inserts a new user into the database"""
-        # Values to be saved to the database
-        values = ("testuser", "testemail", "testpassword")
+        # Values to be saved to the database, excluding the id
+        del test_user["id"]
+        values = tuple(test_user.values())
         mock_connection = mock_connect.return_value
         async with DatabaseInterface(**database_args) as db:
             await db.save_user(*values)
-        """The method should first test if the user already exists. if it doesn't exist, it should save the user to the database."""
+        """The method should first test if the user already exists."""
         mock_connection.cursor.assert_called_once()
+        assert (
+            mock_connection.cursor.return_value.execute.call_count == 2
+        )  # should have queried the database and saved the user = 2 execution calls
+        mock_connection.cursor.return_value.fetchone.assert_called_once()
+        """If the user does not exist, the method should insert the user into the database."""
         # Test that the query is executed
         mock_connection.cursor.return_value.execute.assert_called_with(
             "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
             values,
         )
         # Test that the connection is committed
-        # mock_connection.commit.assert_called_once()
+        mock_connection.commit.assert_called_once()
