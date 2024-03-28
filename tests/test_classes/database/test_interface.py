@@ -1,4 +1,3 @@
-import mock
 import pytest
 from unittest.mock import patch, AsyncMock
 from src.classes.database.interface import DatabaseInterface
