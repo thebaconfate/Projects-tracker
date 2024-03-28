@@ -1,4 +1,3 @@
-from ast import Raise
 import os
 import mysql.connector.aio
 import logging
@@ -48,3 +47,12 @@ class DatabaseInterface:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.__close()
+
+    async def __cursor(self):
+        return await self.mysql.cursor(dictionary=True)
+
+    async def save_user(self, username, email, password):
+        cursor = await self.__cursor()
+        query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+        await cursor.execute(query, (username, email, password))
+        await self.mysql.commit()
