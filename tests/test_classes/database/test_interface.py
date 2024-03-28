@@ -29,6 +29,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_aenter_called(self, database_interface_patch, database_args):
+        """Test that the __aenter__ method is called when entering the context manager"""
         with patch(
             database_interface_patch + ".__aenter__", new_callable=AsyncMock
         ) as mock_aenter:
@@ -38,6 +39,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_aexit_called(self, database_interface_patch, database_args):
+        """Test that the __aexit__ method is called when exiting the context manager"""
         with patch(
             database_interface_patch + ".__aexit__", new_callable=AsyncMock
         ) as mock_aexit:
@@ -47,11 +49,10 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_database_interface(self, mysql_patch, database_args):
-        """Test that the database interface can be created and connected to a database,\
-            this tests the following methods: __init__, __connect, __aenter__, __close, __aexit__"""
+        """Test that the database interface creates a connection when calling __aenter__ and closes a connection when calling __aexit__ within the context manager"""
         mock_connect = mysql_patch
         mock_connection = mock_connect.return_value
-        async with DatabaseInterface(**database_args) as db_interface:
+        async with DatabaseInterface(**database_args):
             # Test that connection is established
             assert mock_connect.called
         # Test that connection is closed after exiting the with block
