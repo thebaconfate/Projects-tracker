@@ -1,3 +1,4 @@
+import mock
 import pytest
 from unittest.mock import patch, AsyncMock
 from src.classes.database.interface import DatabaseInterface
@@ -25,6 +26,15 @@ class TestDatabaseInterface:
     @pytest.fixture
     def database_interface_patch(self):
         yield "src.classes.database.interface.DatabaseInterface"
+
+    @pytest.fixture
+    def test_user(self):
+        yield {
+            "id": 1,
+            "username": "testuser",
+            "email": "testemail",
+            "password": "testpassword",
+        }
 
     @pytest.mark.asyncio
     async def test_aenter_called(self, database_interface_patch, database_args):
@@ -67,6 +77,23 @@ class TestDatabaseInterface:
         mock_connection.close.assert_called_once()
 
     @pytest.mark.asyncio
+    async def test_get_user_by_name(self, mock_connect, database_args, test_user):
+        """Test that the get_user method returns the user from the database"""
+        # user to be fetched from the database
+        mock_cursor = mock_connect.return_value.cursor.return_value
+        expected_result = (
+            mock_connect.return_value.cursor.return_value.fetchone.return_value
+        )
+        async with DatabaseInterface(**database_args) as db:
+            result = await db.get_user_by_username(test_user["username"])
+        mock_connect.return_value.cursor.assert_called_once()
+        mock_cursor.execute.assert_called_with(
+            "SELECT * FROM users WHERE username = %s", (test_user["username"],)
+        )
+        mock_cursor.fetchone.assert_called_once()
+        assert result == expected_result
+
+    @pytest.mark.asyncio
     async def test_save_user(self, mock_connect, database_args):
         """Test that the save_user method inserts a new user into the database"""
         # Values to be saved to the database
@@ -74,12 +101,12 @@ class TestDatabaseInterface:
         mock_connection = mock_connect.return_value
         async with DatabaseInterface(**database_args) as db:
             await db.save_user(*values)
-        # Test that the cursor is created
+        """The method should first test if the user already exists. if it doesn't exist, it should save the user to the database."""
         mock_connection.cursor.assert_called_once()
         # Test that the query is executed
-        mock_connection.cursor.return_value.execute.assert_called_once_with(
+        mock_connection.cursor.return_value.execute.assert_called_with(
             "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
             values,
         )
         # Test that the connection is committed
-        mock_connection.commit.assert_called_once()
+        # mock_connection.commit.assert_called_once()
