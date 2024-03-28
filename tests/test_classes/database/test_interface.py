@@ -65,3 +65,21 @@ class TestDatabaseInterface:
             assert mock_connect.called
         # Test that connection is closed after exiting the with block
         mock_connection.close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_save_user(self, mock_connect, database_args):
+        """Test that the save_user method inserts a new user into the database"""
+        # Values to be saved to the database
+        values = ("testuser", "testemail", "testpassword")
+        mock_connection = mock_connect.return_value
+        async with DatabaseInterface(**database_args) as db:
+            await db.save_user(*values)
+        # Test that the cursor is created
+        mock_connection.cursor.assert_called_once()
+        # Test that the query is executed
+        mock_connection.cursor.return_value.execute.assert_called_once_with(
+            "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+            values,
+        )
+        # Test that the connection is committed
+        mock_connection.commit.assert_called_once()
