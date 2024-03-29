@@ -3,7 +3,6 @@ import os
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
-from src.classes.database.interface import DatabaseInterface
 from src.classes.models.user import UserDBModel, UserModel
 
 
