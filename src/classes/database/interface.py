@@ -99,3 +99,10 @@ class DatabaseInterface:
         query = "SELECT stages.id, stages.name FROM projects LEFT JOIN stages on projects.id = stages.project_id WHERE projects.id = %s"
         await cursor.execute(query, (project_id,))
         return await cursor.fetchall()
+
+    async def get_price_and_paid(self, project_id):
+        # TODO: refactor database to keep whole euros and cents apart
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = "SELECT days, seconds, price, paid FROM stages WHERE project_id = %s"
+        await cursor.execute(query, (project_id,))
+        return await cursor.fetchall()
