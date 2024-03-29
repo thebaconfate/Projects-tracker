@@ -103,6 +103,22 @@ class DatabaseInterface:
     async def get_price_and_paid(self, project_id):
         # TODO: refactor database to keep whole euros and cents apart
         cursor: MySQLCursorAbstract = await self.__cursor()
-        query = "SELECT days, seconds, price, paid FROM stages WHERE project_id = %s"
+        query = "SELECT days, seconds, price, paid_eur, paid_cents FROM stages WHERE project_id = %s"
         await cursor.execute(query, (project_id,))
         return await cursor.fetchall()
+
+    async def update_paid_amount(self, stage_id, eur, cents):
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = "SELECT paid_eur, paid_cents FROM stages WHERE id = %s"
+        await cursor.execute(query, (stage_id,))
+        current_payment = await cursor.fetchone()
+        query = "UPDATE stages SET paid_eur = %s, paid_cents = %s WHERE id = %s"
+        await cursor.execute(
+            query,
+            (
+                eur + current_payment["paid_eur"],
+                cents + current_payment["paid_cents"],
+                stage_id,
+            ),
+        )
+        await self.mysql.commit()

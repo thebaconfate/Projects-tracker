@@ -28,10 +28,9 @@ class ProjectService:
             )
             minutes = time.total_seconds() // 60
             hours = minutes // 60
-            minutes -= hours * 60
+            minutes = minutes % 60
             total_price += stage_price * hours
             total_price += stage_price * (minutes // 15) * (stage_price / 4)
-            # TODO fix this error
-            total_paid += float(stage["paid"])
+            total_paid += float(stage["paid_eur"]) + float(stage["paid_cents"]) / 100
         total_price = round(total_price - total_paid, 2)
         return total_price
