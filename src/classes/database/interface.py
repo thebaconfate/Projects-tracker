@@ -87,3 +87,9 @@ class DatabaseInterface:
         query = "UPDATE users SET password = %s WHERE id = %s"
         await cursor.execute(query, (new_password, user_id))
         await self.mysql.commit()
+
+    async def get_projects(self, user_id):
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = "SELECT id, name FROM projects WHERE owner_id = %s"
+        await cursor.execute(query, (user_id,))
+        return await cursor.fetchall()

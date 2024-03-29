@@ -1,0 +1,16 @@
+from fastapi import APIRouter
+
+from src.classes.services.projectservice import ProjectService
+
+
+router = APIRouter(
+    prefix="/projects",
+    tags=["projects"],
+    responses={404: {"description": "Not found"}},
+)
+
+
+@router.get("/")
+async def get_projects():
+    # TODO refactor this to use the user id of the logged in user.
+    return await ProjectService().get_all_projects(1)
