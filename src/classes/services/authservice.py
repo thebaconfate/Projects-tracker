@@ -19,8 +19,8 @@ class AuthService:
             raise Exception("HASHING_ALGORITHM not set")
 
     async def verify_password(self, plain_password, hashed_password):
-        # return self.pwd_context.verify(plain_password, hashed_password)
-        return plain_password == hashed_password
+        return self.pwd_context.verify(plain_password, hashed_password)
+        # return plain_password == hashed_password
 
     async def hash_password(self, password):
         return self.pwd_context.hash(password)
@@ -33,15 +33,16 @@ class AuthService:
             else timedelta(minutes=15)
         )
         token.update({"exp": expires})
-        encoded_token = jwt.encode(
+        return jwt.encode(
             claims=token, key=self.SECRET_KEY, algorithm=self.HASHING_ALGORITHM
         )
-        return encoded_token
 
     async def authenticate_user(self, user: UserModel, user_in_db: UserDBModel | None):
         if user_in_db is not None and await self.verify_password(
             user.password, user_in_db.password
         ):
-            return await self.generate_jwt_token(user_in_db.model_dump())
+            user_dict = user_in_db.model_dump()
+            del user_dict["password"]
+            return user_dict
         else:
             return False

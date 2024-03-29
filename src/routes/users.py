@@ -1,6 +1,7 @@
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
+from src.classes.models.auth import Token
 from src.classes.services.authservice import AuthService
 from src.classes.models.user import UserModel
 from src.classes.database.interface import DatabaseInterface
@@ -39,4 +40,16 @@ async def login(user: UserModel):
     except Exception as e:
         return {"message": str(e)}
     finally:
-        return await AuthService().authenticate_user(user=user, user_in_db=result)
+        auth = AuthService()
+        auth_user = await auth.authenticate_user(user=user, user_in_db=result)
+        if auth_user:
+            return Token(
+                access_token=await auth.generate_jwt_token(auth_user),
+                token_type="bearer",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
