@@ -1,3 +1,4 @@
+from email.policy import HTTP
 import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -30,6 +31,8 @@ router = APIRouter(
 @router.post(path=("/login"))
 async def login(user: UserModel):
     """Logs a user in by checking the database for a matching username and password"""
+    error_detail = "Incorrect username or password"
+    error_header = {"WWW-Authenticate": "Bearer"}
     try:
         async with DatabaseInterface() as db:
             if user.email is not None:
@@ -39,12 +42,18 @@ async def login(user: UserModel):
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Incorrect username or password",
-                    headers={"WWW-Authenticate": "Bearer"},
+                    detail="No username or email provided",
+                    headers=error_header,
                 )
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        return {"message": str(e)}
-    finally:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+            headers=error_header,
+        )
+    else:
         auth = AuthService()
         auth_user = await auth.authenticate_user(user=user, user_in_db=result)
         if auth_user:
@@ -58,6 +67,6 @@ async def login(user: UserModel):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
+                detail=error_detail,
+                headers=error_header,
             )

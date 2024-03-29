@@ -60,7 +60,7 @@ class DatabaseInterface:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT * FROM users WHERE username = %s"
         await cursor.execute(query, (username,))
-        return await cursor.fetchone()
+        return UserDBModel(**await cursor.fetchone())
 
     async def get_user_by_email(self, email, cursor=None):
         if cursor is None:
@@ -81,3 +81,9 @@ class DatabaseInterface:
         else:
             logging.error(f"User tried to register with existing username {username}")
             raise Exception("User already exists")
+
+    async def update_password(self, user_id, new_password):
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = "UPDATE users SET password = %s WHERE id = %s"
+        await cursor.execute(query, (new_password, user_id))
+        await self.mysql.commit()

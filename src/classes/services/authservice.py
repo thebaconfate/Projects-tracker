@@ -3,6 +3,7 @@ import os
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
+from src.classes.database.interface import DatabaseInterface
 from src.classes.models.user import UserDBModel, UserModel
 
 
@@ -19,8 +20,7 @@ class AuthService:
             raise Exception("HASHING_ALGORITHM not set")
 
     async def verify_password(self, plain_password, hashed_password):
-        # return self.pwd_context.verify(plain_password, hashed_password)
-        return plain_password == hashed_password
+        return self.pwd_context.verify(plain_password, hashed_password)
 
     async def hash_password(self, password):
         return self.pwd_context.hash(password)
@@ -28,7 +28,7 @@ class AuthService:
     async def generate_jwt_token(self, dict, expiration=os.getenv("TOKEN_EXPIRATION")):
         token = dict.copy()
         expires = datetime.now(UTC) + (
-            timedelta(minutes=expiration)
+            timedelta(minutes=int(expiration))
             if expiration is not None
             else timedelta(minutes=15)
         )
@@ -38,8 +38,8 @@ class AuthService:
         )
 
     async def authenticate_user(self, user: UserModel, user_in_db: UserDBModel | None):
-        if user_in_db is not None and await self.verify_password(
-            user.password, user_in_db.password
+        if user_in_db is not None and (
+            await self.verify_password(user.password, user_in_db.password)
         ):
             user_dict = user_in_db.model_dump()
             del user_dict["password"]
