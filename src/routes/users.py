@@ -1,5 +1,6 @@
 import os
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 
 from src.classes.models.auth import Token
 from src.classes.services.authservice import AuthService
@@ -36,17 +37,24 @@ async def login(user: UserModel):
             elif user.username is not None:
                 result = await db.get_user_by_username(username=user.username)
             else:
-                result = {"message": "No email or username provided"}
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Incorrect username or password",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
     except Exception as e:
         return {"message": str(e)}
     finally:
         auth = AuthService()
         auth_user = await auth.authenticate_user(user=user, user_in_db=result)
         if auth_user:
-            return Token(
+            token = Token(
                 access_token=await auth.generate_jwt_token(auth_user),
                 token_type="bearer",
             )
+            response = JSONResponse(content="Authentication succesful")
+            response.set_cookie(key=token.token_type, value=token.access_token)
+            return response
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -19,8 +19,8 @@ class AuthService:
             raise Exception("HASHING_ALGORITHM not set")
 
     async def verify_password(self, plain_password, hashed_password):
-        return self.pwd_context.verify(plain_password, hashed_password)
-        # return plain_password == hashed_password
+        # return self.pwd_context.verify(plain_password, hashed_password)
+        return plain_password == hashed_password
 
     async def hash_password(self, password):
         return self.pwd_context.hash(password)
