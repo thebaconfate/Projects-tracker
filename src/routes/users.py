@@ -27,7 +27,7 @@ router = APIRouter(
 )
 
 
-@router.post(path=("login/"))
+@router.post(path=("/login"))
 async def login(user: UserModel):
     """Logs a user in by checking the database for a matching username and password"""
     error_detail = "Incorrect username or password"

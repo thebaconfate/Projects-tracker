@@ -31,6 +31,7 @@ class ProjectService:
             minutes -= hours * 60
             total_price += stage_price * hours
             total_price += stage_price * (minutes // 15) * (stage_price / 4)
+            # TODO fix this error
             total_paid += float(stage["paid"])
         total_price = round(total_price - total_paid, 2)
         return total_price
