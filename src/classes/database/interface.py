@@ -63,24 +63,25 @@ class DatabaseInterface:
         """Return cursor for database interaction"""
         return await self.mysql.cursor(dictionary=True)
 
-    async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
-        # TODO: write tests for this method
-        """Get user by username from database"""
+    async def __get_user_by_value(
+        self, query_value, column_name, cursor=None
+    ) -> UserDBModel | None:
+        """Get user by value from database"""
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
-        query = "SELECT * FROM users WHERE username = %s"
-        await cursor.execute(query, (username,))
+        query = f"SELECT * FROM users WHERE {column_name} = %s"
+        await cursor.execute(query, (query_value,))
         result = await cursor.fetchone()
         return UserDBModel(**result) if result else None
 
+    async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
+        # TODO: write tests for this method
+        """Get user by username from database"""
+        return await self.__get_user_by_value(username, "username", cursor=cursor)
+
     async def get_user_by_email(self, email, cursor=None) -> UserDBModel | None:
         """Get user by email from database"""
-        if cursor is None:
-            cursor: MySQLCursorAbstract = await self.__cursor()
-        query = "SELECT * FROM users WHERE email = %s"
-        await cursor.execute(query, (email,))
-        result = await cursor.fetchone()
-        return UserDBModel(**result) if result else None
+        return await self.__get_user_by_value(email, "email", cursor=cursor)
 
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
