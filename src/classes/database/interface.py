@@ -23,6 +23,7 @@ class DatabaseInterface:
         self.mysql: None | mysql.connector.aio.MySQLConnectionAbstract = None
 
     async def __connect(self) -> None:
+        """Establish connection to database"""
         try:
             self.mysql: mysql.connector.aio.MySQLConnectionAbstract = (
                 await mysql.connector.aio.connect(
@@ -43,21 +44,27 @@ class DatabaseInterface:
             )
 
     async def __aenter__(self):
+        """Enter context manager and establish connection to database"""
         await self.__connect()
         return self
 
     async def __close(self) -> None:
+        """Close connection to database"""
         if self.mysql:
             await self.mysql.close()
             logging.info(f"Closed connection to database at {self.host}")
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit context manager and close connection to database"""
         await self.__close()
 
     async def __cursor(self) -> MySQLCursorAbstract:
+        """Return cursor for database interaction"""
         return await self.mysql.cursor(dictionary=True)
 
     async def get_user_by_username(self, username, cursor=None):
+        # TODO: write tests for this method
+        """Get user by username from database"""
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT * FROM users WHERE username = %s"
@@ -66,6 +73,7 @@ class DatabaseInterface:
         return UserDBModel(**result) if result else None
 
     async def get_user_by_email(self, email, cursor=None):
+        """Get user by email from database"""
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT * FROM users WHERE email = %s"
@@ -74,6 +82,7 @@ class DatabaseInterface:
         return UserDBModel(**result) if result else None
 
     async def save_user(self, username, email, password):
+        """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
         if await self.get_user_by_username(username=username, cursor=cursor):
             logging.error(f"User tried to register with existing username {username}")
