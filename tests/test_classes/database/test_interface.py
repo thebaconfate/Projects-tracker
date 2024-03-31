@@ -4,7 +4,6 @@ from src.classes.database.interface import DatabaseInterface
 
 
 class TestDatabaseInterface:
-
     @pytest.fixture(autouse=True)
     def mock_connect(self):
         with patch(
