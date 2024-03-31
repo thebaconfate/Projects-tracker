@@ -13,13 +13,13 @@ class DatabaseInterface:
         user: str = os.getenv("DB_USER"),
         password: str = os.getenv("DB_PASSWORD"),
         database: str = os.getenv("DB_DATABASE"),
-        port: int = int(os.getenv("DB_PORT")),
+        port: int | str = os.getenv("DB_PORT"),
     ):
         self.host: str = host
         self.user: str = user
         self.password: str = password
         self.database: str = database
-        self.port: int = port
+        self.port: int = int(port) if isinstance(port, str) else port
         self.mysql: None | mysql.connector.aio.MySQLConnectionAbstract = None
 
     async def __connect(self) -> None:
@@ -60,27 +60,26 @@ class DatabaseInterface:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT * FROM users WHERE username = %s"
         await cursor.execute(query, (username,))
-        return UserDBModel(**await cursor.fetchone())
+        result = await cursor.fetchone()
+        return UserDBModel(**result) if result else None
 
     async def get_user_by_email(self, email, cursor=None):
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT * FROM users WHERE email = %s"
         await cursor.execute(query, (email,))
-        return UserDBModel(**await cursor.fetchone())
+        result = await cursor.fetchone()
+        return UserDBModel(**result) if result else None
 
     async def save_user(self, username, email, password):
         cursor: MySQLCursorAbstract = await self.__cursor()
-        if (
-            await self.get_user_by_username(username=username, cursor=cursor)
-            is not None
-        ):
-            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
-            await cursor.execute(operation=query, params=(username, email, password))
-            await self.mysql.commit()
-        else:
+        if await self.get_user_by_username(username=username, cursor=cursor):
             logging.error(f"User tried to register with existing username {username}")
             raise Exception("User already exists")
+        else:
+            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+            await cursor.execute(query, (username, email, password))
+            await self.mysql.commit()
 
     async def update_password(self, user_id, new_password):
         cursor: MySQLCursorAbstract = await self.__cursor()

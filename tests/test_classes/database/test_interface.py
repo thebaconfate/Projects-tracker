@@ -1,3 +1,4 @@
+import mock
 import pytest
 from unittest.mock import patch, AsyncMock
 from src.classes.database.interface import DatabaseInterface
@@ -76,10 +77,13 @@ class TestDatabaseInterface:
         mock_connection.close.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_user_by_name(self, mock_connect, database_args, test_user):
+    async def test_get_user_by_name(
+        self, mock_connect: AsyncMock, database_args, test_user
+    ):
         """Test that the get_user method returns the user from the database"""
         # user to be fetched from the database
         mock_cursor = mock_connect.return_value.cursor.return_value
+        mock_cursor.fetchone.return_value = test_user
         expected_result = (
             mock_connect.return_value.cursor.return_value.fetchone.return_value
         )
@@ -90,7 +94,7 @@ class TestDatabaseInterface:
             "SELECT * FROM users WHERE username = %s", (test_user["username"],)
         )
         mock_cursor.fetchone.assert_called_once()
-        assert result == expected_result
+        assert result.model_dump() == expected_result
 
     @pytest.mark.asyncio
     async def test_save_user(self, mock_connect, database_args, test_user):
@@ -99,6 +103,8 @@ class TestDatabaseInterface:
         del test_user["id"]
         values = tuple(test_user.values())
         mock_connection = mock_connect.return_value
+        mock_cursor = mock_connection.cursor.return_value
+        mock_cursor.fetchone.return_value = None
         async with DatabaseInterface(**database_args) as db:
             await db.save_user(*values)
         """The method should first test if the user already exists."""

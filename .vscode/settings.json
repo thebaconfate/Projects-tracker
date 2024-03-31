@@ -2,7 +2,6 @@
 	"[python]": {
 		"editor.defaultFormatter": "ms-python.black-formatter"
 	},
-	"activestate.promptRuntimeCreation": false,
 	"cSpell.words": [
 		"customerror",
 		"customerrors",
