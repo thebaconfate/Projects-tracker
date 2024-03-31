@@ -77,7 +77,7 @@ class TestDatabaseInterface:
         mock_connection.close.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_user_by_name(
+    async def test_get_user_by_email(
         self, mock_connect: AsyncMock, database_args, test_user
     ):
         """Test that the get_user method returns the user from the database"""
@@ -88,13 +88,30 @@ class TestDatabaseInterface:
             mock_connect.return_value.cursor.return_value.fetchone.return_value
         )
         async with DatabaseInterface(**database_args) as db:
-            result = await db.get_user_by_username(test_user["username"])
+            result = await db.get_user_by_email(test_user["email"])
         mock_connect.return_value.cursor.assert_called_once()
         mock_cursor.execute.assert_called_with(
-            "SELECT * FROM users WHERE username = %s", (test_user["username"],)
+            "SELECT * FROM users WHERE email = %s", (test_user["email"],)
         )
         mock_cursor.fetchone.assert_called_once()
         assert result.model_dump() == expected_result
+
+    @pytest.mark.asyncio
+    async def test_get_user_by_email_no_user(
+        self, mock_connect: AsyncMock, database_args, test_user
+    ):
+        """Test that the get_user method returns None if the user is not found in the database"""
+        # user to be fetched from the database
+        mock_cursor = mock_connect.return_value.cursor.return_value
+        mock_cursor.fetchone.return_value = None
+        async with DatabaseInterface(**database_args) as db:
+            result = await db.get_user_by_email(test_user["email"])
+        mock_connect.return_value.cursor.assert_called_once()
+        mock_cursor.execute.assert_called_with(
+            "SELECT * FROM users WHERE email = %s", (test_user["email"],)
+        )
+        mock_cursor.fetchone.assert_called_once()
+        assert result is None
 
     @pytest.mark.asyncio
     async def test_save_user(self, mock_connect, database_args, test_user):
