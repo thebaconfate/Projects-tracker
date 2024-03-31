@@ -147,8 +147,7 @@ class TestDatabaseInterface:
         del test_user["id"]
         values = tuple(test_user.values())
         mock_connection = mock_connect.return_value
-        mock_cursor = mock_connection.cursor.return_value
-        mock_cursor.fetchone.return_value = test_user
+        mock_connection.cursor.fetchone.return_value = test_user
         async with DatabaseInterface(**database_args) as db:
             with pytest.raises(Exception):
                 await db.save_user(*values)
@@ -156,3 +155,15 @@ class TestDatabaseInterface:
         mock_connection.cursor.return_value.execute.assert_called_once()
         mock_connection.commit.assert_not_called()
 
+    @pytest.mark.asyncio
+    async def test_update_password(self, mock_connect, database_args, test_user):
+        mock_connection = mock_connect.return_value
+        new_password = "new_password"
+        async with DatabaseInterface(**database_args) as db:
+            await db.update_password(test_user["id"], new_password)
+        mock_connection.cursor.assert_called_once()
+        mock_connection.cursor.return_value.execute.assert_called_once_with(
+            "UPDATE users SET password = %s WHERE id = %s",
+            (new_password, test_user["id"]),
+        )
+        mock_connection.commit.assert_called_once()
