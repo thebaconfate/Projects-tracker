@@ -155,3 +155,4 @@ class TestDatabaseInterface:
         mock_connection.cursor.assert_called_once()
         mock_connection.cursor.return_value.execute.assert_called_once()
         mock_connection.commit.assert_not_called()
+

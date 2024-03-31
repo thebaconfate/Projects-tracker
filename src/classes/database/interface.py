@@ -38,7 +38,9 @@ class DatabaseInterface:
             logging.error(
                 msg=f"Failed to connect to database at {self.host} with error message:\n {e}"
             )
-            raise DatabaseConnectionError(message="Database error")
+            raise DatabaseConnectionError(
+                message="Could not establish connection to database"
+            )
 
     async def __aenter__(self):
         await self.__connect()
