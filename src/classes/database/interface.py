@@ -4,6 +4,7 @@ import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from src.classes.models.user import UserDBModel
 from src.classes.errors.database import DatabaseConnectionError
+from typing import Self
 
 
 class DatabaseInterface:
@@ -43,7 +44,7 @@ class DatabaseInterface:
                 message="Could not establish connection to database"
             )
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         """Enter context manager and establish connection to database"""
         await self.__connect()
         return self
@@ -62,7 +63,7 @@ class DatabaseInterface:
         """Return cursor for database interaction"""
         return await self.mysql.cursor(dictionary=True)
 
-    async def get_user_by_username(self, username, cursor=None):
+    async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
         # TODO: write tests for this method
         """Get user by username from database"""
         if cursor is None:
@@ -72,7 +73,7 @@ class DatabaseInterface:
         result = await cursor.fetchone()
         return UserDBModel(**result) if result else None
 
-    async def get_user_by_email(self, email, cursor=None):
+    async def get_user_by_email(self, email, cursor=None) -> UserDBModel | None:
         """Get user by email from database"""
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
@@ -81,7 +82,7 @@ class DatabaseInterface:
         result = await cursor.fetchone()
         return UserDBModel(**result) if result else None
 
-    async def save_user(self, username, email, password):
+    async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
         if await self.get_user_by_username(username=username, cursor=cursor):
@@ -92,7 +93,7 @@ class DatabaseInterface:
             await cursor.execute(query, (username, email, password))
             await self.mysql.commit()
 
-    async def update_password(self, user_id, new_password):
+    async def update_password(self, user_id, new_password) -> None:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = "UPDATE users SET password = %s WHERE id = %s"
         await cursor.execute(query, (new_password, user_id))
