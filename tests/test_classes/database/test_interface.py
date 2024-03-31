@@ -1,4 +1,3 @@
-import mock
 import pytest
 from unittest.mock import patch, AsyncMock
 from src.classes.database.interface import DatabaseInterface
@@ -138,3 +137,21 @@ class TestDatabaseInterface:
         )
         # Test that the connection is committed
         mock_connection.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_save_user_existing_user(
+        self, mock_connect, database_args, test_user
+    ):
+        """Test that the save_user method raises an exception if the user already exists"""
+        # Values to be saved to the database, excluding the id
+        del test_user["id"]
+        values = tuple(test_user.values())
+        mock_connection = mock_connect.return_value
+        mock_cursor = mock_connection.cursor.return_value
+        mock_cursor.fetchone.return_value = test_user
+        async with DatabaseInterface(**database_args) as db:
+            with pytest.raises(Exception):
+                await db.save_user(*values)
+        mock_connection.cursor.assert_called_once()
+        mock_connection.cursor.return_value.execute.assert_called_once()
+        mock_connection.commit.assert_not_called()
