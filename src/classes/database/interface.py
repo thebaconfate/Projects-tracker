@@ -20,7 +20,7 @@ class DatabaseInterface:
         self.user: str = user
         self.password: str = password
         self.database: str = database
-        self.port: int = int(port) if isinstance(port, str) else port
+        self.port: int = port if isinstance(port, int) else int(port)
         self.mysql: None | mysql.connector.aio.MySQLConnectionAbstract = None
 
     async def __connect(self) -> None:
