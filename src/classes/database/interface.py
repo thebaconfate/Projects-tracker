@@ -106,7 +106,7 @@ class DatabaseInterface:
         await cursor.execute(query, (user_id,))
         return await cursor.fetchall()
 
-    async def get_project(self, project_id):
+    async def get_stages(self, project_id):
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT stages.id, stages.name FROM projects LEFT JOIN stages on projects.id = stages.project_id WHERE projects.id = %s"
         await cursor.execute(query, (project_id,))

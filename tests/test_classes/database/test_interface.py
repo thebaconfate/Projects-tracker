@@ -167,3 +167,33 @@ class TestDatabaseInterface:
             (new_password, test_user["id"]),
         )
         mock_connection.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_projects(self, mock_connect, database_args, test_user):
+        mock_connection = mock_connect.return_value
+        expected_result = [(1, "project1"), (2, "project2")]
+        mock_connection.cursor.return_value.fetchall.return_value = expected_result
+        async with DatabaseInterface(**database_args) as db:
+            result = await db.get_projects(test_user["id"])
+        mock_connection.cursor.assert_called_once()
+        mock_connection.cursor.return_value.execute.assert_called_once_with(
+            "SELECT id, name FROM projects WHERE owner_id = %s", (test_user["id"],)
+        )
+        mock_connection.cursor.return_value.fetchall.assert_called_once()
+        assert result == expected_result
+
+    @pytest.mark.asyncio
+    async def test_get_stages(self, mock_connect, database_args, test_user):
+        mock_connection = mock_connect.return_value
+        expected_result = [(1, "stage1"), (2, "stage2")]
+        project_id = 1
+        mock_connection.cursor.return_value.fetchall.return_value = expected_result
+        async with DatabaseInterface(**database_args) as db:
+            result = await db.get_stages(1)
+        mock_connection.cursor.assert_called_once()
+        mock_connection.cursor.return_value.execute.assert_called_once_with(
+            "SELECT stages.id, stages.name FROM projects LEFT JOIN stages on projects.id = stages.project_id WHERE projects.id = %s",
+            (project_id,),
+        )
+        mock_connection.cursor.return_value.fetchall.assert_called_once()
+        assert result == expected_result
