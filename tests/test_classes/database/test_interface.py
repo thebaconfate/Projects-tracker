@@ -203,6 +203,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_get_projects(self, mock_connect, database_args, test_user):
+        "tests if get_projects gets a list of projects with their project id and project name"
         mock_connection = mock_connect.return_value
         expected_result = [(1, "project1"), (2, "project2")]
         mock_connection.cursor.return_value.fetchall.return_value = expected_result
@@ -217,6 +218,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_get_stages(self, mock_connect, database_args, test_user):
+        """tests if get_stages gets the stage id and stage name"""
         mock_connection = mock_connect.return_value
         expected_result = [(1, "stage1"), (2, "stage2")]
         project_id = 1
