@@ -189,6 +189,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_update_password(self, mock_connect, database_args, test_user):
+        """Test if you can update the already stored password"""
         mock_connection = mock_connect.return_value
         new_password = "new_password"
         async with DatabaseInterface(**database_args) as db:
