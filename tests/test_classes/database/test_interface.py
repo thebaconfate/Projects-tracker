@@ -112,6 +112,21 @@ class TestDatabaseInterface:
         assert result is None
 
     @pytest.mark.asyncio
+    async def test_get_user_by_username(
+        self, mock_connect: AsyncMock, database_args, test_user
+    ):
+        mock_cursor = mock_connect.return_value.cursor.return_value
+        mock_cursor.fetchone.return_value = test_user
+        async with DatabaseInterface(**database_args) as db:
+            result = await db.get_user_by_username(username=test_user["username"])
+        mock_connect.return_value.cursor.assert_called_once()
+        mock_cursor.execute.assert_called_once_with(
+            "SELECT * FROM users WHERE username = %s", (test_user["username"],)
+        )
+        mock_cursor.fetchone.assert_called_once()
+        assert result.model_dump() == test_user
+
+    @pytest.mark.asyncio
     async def test_save_user(self, mock_connect, database_args, test_user):
         """Test that the save_user method inserts a new user into the database"""
         # Values to be saved to the database, excluding the id

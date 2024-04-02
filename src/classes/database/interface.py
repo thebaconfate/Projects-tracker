@@ -75,7 +75,6 @@ class DatabaseInterface:
         return UserDBModel(**result) if result else None
 
     async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
-        # TODO: write tests for this method
         """Get user by username from database"""
         return await self.__get_user_by_value(username, "username", cursor=cursor)
 
