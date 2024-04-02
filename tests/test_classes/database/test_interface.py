@@ -46,6 +46,7 @@ class TestDatabaseInterface:
 
     @pytest.mark.asyncio
     async def test_aenter_raises_exception(self, mock_connect, database_args):
+        """Test that the __aenter__ method raises an exception when connection fails"""
         # Configure mock to raise an exception when called
         mock_connect.side_effect = Exception()
         with pytest.raises(Exception):
@@ -115,6 +116,7 @@ class TestDatabaseInterface:
     async def test_get_user_by_username(
         self, mock_connect: AsyncMock, database_args, test_user
     ):
+        """Test that the get_user_by_username correctly fetches a user and returns it in a model when found"""
         mock_cursor = mock_connect.return_value.cursor.return_value
         mock_cursor.fetchone.return_value = test_user
         async with DatabaseInterface(**database_args) as db:
@@ -130,6 +132,7 @@ class TestDatabaseInterface:
     async def test_get_user_by_username_no_user(
         self, mock_connect: AsyncMock, database_args, test_user
     ):
+        """Tests if get_user_by_username correctly returns none when the user is not found in the database"""
         mock_cursor = mock_connect.return_value.cursor.return_value
         mock_cursor.fetchone.return_value = None
         async with DatabaseInterface(**database_args) as db:
