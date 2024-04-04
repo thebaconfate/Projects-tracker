@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from src.classes.errors.authentication import HashingAlgorithmError, SecretKeyError
-from src.classes.models.user import UserDBModel, UserModel
+from src.classes.models.user import DBUserModel, LoginUserModel
 
 
 class AuthService:
@@ -37,7 +37,7 @@ class AuthService:
             claims=token, key=self.SECRET_KEY, algorithm=self.HASHING_ALGORITHM
         )
 
-    async def authenticate_user(self, user: UserModel, user_in_db: UserDBModel | None):
+    async def authenticate_user(self, user: LoginUserModel, user_in_db: DBUserModel | None):
         if user_in_db is not None and (
             await self.verify_password(user.password, user_in_db.password)
         ):

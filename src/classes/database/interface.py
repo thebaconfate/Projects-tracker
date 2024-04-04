@@ -2,7 +2,7 @@ import os
 import mysql.connector.aio
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
-from src.classes.models.user import UserDBModel
+from src.classes.models.user import DBUserModel
 from src.classes.errors.database import DatabaseConnectionError, DatabaseUserAlreadyExistsError
 from typing import Self
 
@@ -64,20 +64,20 @@ class DatabaseInterface:
 
     async def __get_user_by_value(
         self, query_value, column_name, cursor=None
-    ) -> UserDBModel | None:
+    ) -> DBUserModel | None:
         """Get user by value from database"""
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = f"SELECT * FROM users WHERE {column_name} = %s"
         await cursor.execute(query, (query_value,))
         result = await cursor.fetchone()
-        return UserDBModel(**result) if result else None
+        return DBUserModel(**result) if result else None
 
-    async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
+    async def get_user_by_username(self, username, cursor=None) -> DBUserModel | None:
         """Get user by username from database"""
         return await self.__get_user_by_value(username, "name", cursor=cursor)
 
-    async def get_user_by_email(self, email, cursor=None) -> UserDBModel | None:
+    async def get_user_by_email(self, email, cursor=None) -> DBUserModel | None:
         """Get user by email from database"""
         return await self.__get_user_by_value(email, "email", cursor=cursor)
 
@@ -131,3 +131,4 @@ class DatabaseInterface:
             ),
         )
         await self.mysql.commit()
+
