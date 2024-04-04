@@ -3,7 +3,7 @@ import mysql.connector.aio
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from src.classes.models.user import UserDBModel
-from src.classes.errors.database import DatabaseConnectionError
+from src.classes.errors.database import DatabaseConnectionError, DatabaseUserExistsError
 from typing import Self
 
 
@@ -76,7 +76,7 @@ class DatabaseInterface:
 
     async def get_user_by_username(self, username, cursor=None) -> UserDBModel | None:
         """Get user by username from database"""
-        return await self.__get_user_by_value(username, "username", cursor=cursor)
+        return await self.__get_user_by_value(username, "name", cursor=cursor)
 
     async def get_user_by_email(self, email, cursor=None) -> UserDBModel | None:
         """Get user by email from database"""
@@ -85,11 +85,11 @@ class DatabaseInterface:
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
-        if await self.get_user_by_username(username=username, cursor=cursor):
-            logging.error(f"User tried to register with existing username {username}")
-            raise Exception("User already exists")
+        if await self.get_user_by_email(email=email, cursor=cursor):
+            logging.error(f"User tried to register with existing email {email}")
+            raise DatabaseUserExistsError("User already exists")
         else:
-            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+            query = "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)"
             await cursor.execute(query, (username, email, password))
             await self.mysql.commit()
 
@@ -112,7 +112,6 @@ class DatabaseInterface:
         return await cursor.fetchall()
 
     async def get_price_and_paid(self, project_id):
-        # TODO: refactor database to keep whole euros and cents apart
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = "SELECT days, seconds, price, paid_eur, paid_cents FROM stages WHERE project_id = %s"
         await cursor.execute(query, (project_id,))
