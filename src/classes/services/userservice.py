@@ -11,21 +11,6 @@ class UserService:
         """This class does not expect any arguments to be passed to it. It is used to interact with the database to perform operations on the user table."""
         self.user: NewUserModel = user
 
-    async def __aenter__(self):
-        """Entering the context manager sets the email and username to lowercase"""
-        await self.__lower()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, traceback):
-        """Exiting the context manager does not have to do anything."""
-        pass
-
-    async def __lower(self) -> None:
-        if self.user.email:
-            self.user.email = self.user.email.lower()
-        if self.user.username:
-            self.user.username = self.user.username.lower()
-
     async def __hash_password(self, auth: AuthService = AuthService()):
         self.user.password = await auth.hash_password(self.user.password)
 

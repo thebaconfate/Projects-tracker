@@ -86,8 +86,7 @@ async def login(user: LoginUserModel):
 async def register(user: NewUserModel):
     """Registers a new user by adding them to the database, this requires a unique email address, a username and a password."""
     try:
-        async with UserService(user) as user_service:
-            await user_service.add_user()
+        await UserService(user).add_user()
     except HTTPException as e:
         raise e
     except Exception as e:
