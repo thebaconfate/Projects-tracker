@@ -6,14 +6,20 @@ from src.classes.models.user import DBUserModel
 from src.classes.errors.database import DatabaseConnectionError, DatabaseUserAlreadyExistsError
 from typing import Self
 
+HOST = os.getenv("DB_HOST")
+USER = os.getenv("DB_USER")
+PASSWORD = os.getenv("DB_PASSWORD")
+DATABASE = os.getenv("DB_DATABASE")
+PORT = int(os.getenv("DB_PORT"))
+
 class DatabaseInterface:
     def __init__(
         self,
-        host: str = os.getenv("DB_HOST"),
-        user: str = os.getenv("DB_USER"),
-        password: str = os.getenv("DB_PASSWORD"),
-        database: str = os.getenv("DB_DATABASE"),
-        port: int | str = os.getenv("DB_PORT"),
+        host: str = HOST,
+        user: str = USER,
+        password: str = PASSWORD,
+        database: str = DATABASE,
+        port: int | str = PORT,
     ):
         self.host: str = host
         self.user: str = user
