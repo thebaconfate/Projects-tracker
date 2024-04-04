@@ -67,7 +67,6 @@ class TestDatabaseInterface:
     @pytest.mark.asyncio
     async def test_database_interface(self, mock_connect, database_args):
         """Test that the database interface creates a connection when calling __aenter__ and closes a connection when calling __aexit__ within the context manager"""
-        mock_connect = mock_connect
         mock_connection = mock_connect.return_value
         async with DatabaseInterface(**database_args):
             # Test that connection is established

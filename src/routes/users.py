@@ -3,7 +3,7 @@ import os
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from src.classes.errors.database import DatabaseConnectionError, DatabaseUserExistsError
+from src.classes.errors.database import DatabaseConnectionError, DatabaseUserAlreadyExistsError
 from src.classes.models.auth import Token
 from src.classes.services.authservice import AuthService
 from src.classes.models.user import UserModel
@@ -88,10 +88,10 @@ async def register(user: UserModel):
                 user.username = user.username.lower()
                 user.password = await auth.hash_password(user.password)
                 await db.save_user(**user.model_dump())
-        except (DatabaseUserExistsError, RuntimeError):
+        except (DatabaseUserAlreadyExistsError, RuntimeError):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=str(DatabaseUserExistsError().message),
+                detail=str(DatabaseUserAlreadyExistsError().message),
             )
         except DatabaseConnectionError as e:
             raise HTTPException(

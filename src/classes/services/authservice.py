@@ -3,6 +3,7 @@ import os
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
+from src.classes.errors.authentication import HashingAlgorithmError, SecretKeyError
 from src.classes.models.user import UserDBModel, UserModel
 
 
@@ -14,9 +15,9 @@ class AuthService:
         self.SECRET_KEY = os.getenv("SECRET_KEY")
         self.HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
         if self.SECRET_KEY is None:
-            raise Exception("SECRET_KEY not set")
+            raise SecretKeyError()
         if self.HASHING_ALGORITHM is None:
-            raise Exception("HASHING_ALGORITHM not set")
+            raise HashingAlgorithmError()
 
     async def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)

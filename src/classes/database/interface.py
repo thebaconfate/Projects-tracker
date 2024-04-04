@@ -3,9 +3,8 @@ import mysql.connector.aio
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from src.classes.models.user import UserDBModel
-from src.classes.errors.database import DatabaseConnectionError, DatabaseUserExistsError
+from src.classes.errors.database import DatabaseConnectionError, DatabaseUserAlreadyExistsError
 from typing import Self
-
 
 class DatabaseInterface:
     def __init__(
@@ -87,7 +86,7 @@ class DatabaseInterface:
         cursor: MySQLCursorAbstract = await self.__cursor()
         if await self.get_user_by_email(email=email, cursor=cursor):
             logging.error(f"User tried to register with existing email {email}")
-            raise DatabaseUserExistsError("User already exists")
+            raise DatabaseUserAlreadyExistsError("User already exists")
         else:
             query = "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)"
             await cursor.execute(query, (username, email, password))
