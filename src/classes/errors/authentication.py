@@ -15,3 +15,8 @@ class HashingAlgorithmError(AuthenticationError):
     """Error raised when HASHING_ALGORITHM is not set"""
     def __init__(self, message: str = "HASHING_ALGORITHM not set"):
         super().__init__(message)
+
+class IncorrectPasswordError(AuthenticationError):
+    """Error raised when the password provided does not match the hashed password in the database"""
+    def __init__(self, message: str = "Incorrect password"):
+        super().__init__(message)
