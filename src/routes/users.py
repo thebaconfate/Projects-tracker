@@ -1,7 +1,6 @@
-import logging
 import os
 from fastapi import APIRouter, HTTPException, Response, status
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 
 from src.classes.services.userservice import UserService
 from src.classes.models.auth import Token
