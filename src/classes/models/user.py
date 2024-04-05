@@ -1,5 +1,5 @@
-from typing import Any, Optional
-from pydantic import BaseModel, EmailStr, model_validator
+from typing import Any, Optional, Self
+from pydantic import BaseModel, EmailStr, model_validator, field_validator
 
 
 class BaseUserModel(BaseModel):
@@ -7,13 +7,15 @@ class BaseUserModel(BaseModel):
     username: str
     password: str
 
-    @model_validator(mode="after")
-    def lower(self) -> "BaseUserModel":
-        if self.email:
-            self.email = self.email.lower()
-        if self.username:
-            self.username = self.username.lower()
-        return self
+    @model_validator(mode="before")
+    @classmethod
+    def lower(cls, data: Any):
+        if isinstance(data, dict):
+            if data.get("email"):
+                data["email"] = data["email"].lower()
+            if data.get("username"):
+                data["username"] = data["username"].lower()
+            return data
 
 
 class NewUserModel(BaseUserModel):
@@ -21,8 +23,8 @@ class NewUserModel(BaseUserModel):
 
 
 class LoginUserModel(BaseUserModel):
-    email: Optional[EmailStr]
-    username: Optional[str]
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -30,9 +32,21 @@ class LoginUserModel(BaseUserModel):
         if isinstance(data, dict):
             if not data.get("email") and not data.get("username"):
                 raise ValueError("Either email or username must be provided")
-        return data
+            else:
+                return data
 
 
 class DBUserModel(BaseUserModel):
     id: int
     password: bytes
+
+    @field_validator("password", mode="before")
+    def validate_byte_data(cls, value):
+        if isinstance(value, bytearray):
+            return bytes(value)
+        elif isinstance(value, bytes):
+            return value
+        elif isinstance(value, str):
+            return value.encode()
+        else:
+            raise ValueError("Invalid data type for bytes")

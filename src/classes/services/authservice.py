@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, UTC
+import logging
 import os
 import bcrypt
 from fastapi.security import OAuth2PasswordBearer
@@ -29,9 +30,9 @@ class AuthService:
             raise HashingAlgorithmError()
 
     async def verify_password(
-        self, plain_password: str, hashed_password: bytes
+        self, plain_password: str, hashed_password: bytearray
     ) -> bool:
-        return bcrypt.checkpw(plain_password.encode(), hashed_password)
+        return bcrypt.checkpw(plain_password.encode(), bytes(hashed_password))
 
     async def hash_password(self, password: str) -> bytes:
         pwd_bytes: bytes = password.encode()
@@ -54,7 +55,8 @@ class AuthService:
     async def authenticate_user(
         self, user: LoginUserModel, user_in_db: DBUserModel | None
     ):
-        if self.verify_password(user.password, user_in_db.password):
+        logging.debug(f"Authenticating user: {user}")
+        if await self.verify_password(user.password, user_in_db.password):
             user_dict = user_in_db.model_dump()
             del user_dict["password"]
             return user_dict
@@ -62,7 +64,9 @@ class AuthService:
             raise IncorrectPasswordError()
 
     async def login(self, user: LoginUserModel):
-        with DatabaseInterface() as db:
+        logging.debug("Attempting to log in user")
+        result = None
+        async with DatabaseInterface() as db:
             if user.email:
                 result = await db.get_user_by_email(email=user.email)
             elif user.username:
@@ -70,6 +74,7 @@ class AuthService:
         if result is None:
             raise UserNotFoundError("User not found")
         else:
+            logging.debug(f"User found: {result}")
             user_dict = await self.authenticate_user(user=user, user_in_db=result)
             token = await self.generate_jwt_token(user_dict)
             return Token(

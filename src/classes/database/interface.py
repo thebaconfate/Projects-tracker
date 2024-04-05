@@ -76,29 +76,39 @@ class DatabaseInterface:
         self, query_value, column_name, cursor=None
     ) -> DBUserModel | None:
         """Get user by value from database"""
+        logging.debug("Getting user by value")
         if cursor is None:
             cursor: MySQLCursorAbstract = await self.__cursor()
         query = f"SELECT * FROM users WHERE {column_name} = %s"
         await cursor.execute(query, (query_value,))
         result = await cursor.fetchone()
+        logging.debug(f"Result: {result}")
         return DBUserModel(**result) if result else None
 
     async def get_user_by_username(self, username, cursor=None) -> DBUserModel | None:
         """Get user by username from database"""
-        return await self.__get_user_by_value(username, "name", cursor=cursor)
+        logging.debug("Getting user by username")
+        return await self.__get_user_by_value(username, "username", cursor=cursor)
 
     async def get_user_by_email(self, email, cursor=None) -> DBUserModel | None:
         """Get user by email from database"""
+        logging.debug("Getting user by email")
         return await self.__get_user_by_value(email, "email", cursor=cursor)
 
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
-        if await self.get_user_by_email(email=email, cursor=cursor):
+        user = DBUserModel(
+            email="email@email.com",
+            username="gerard lichtert",
+            password=b"password",
+            id=1,
+        )
+        if user:
             logging.error(f"User tried to register with existing email {email}")
-            raise DatabaseUserAlreadyExistsError("User already exists")
+            raise DatabaseUserAlreadyExistsError()
         else:
-            query = "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)"
+            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
             await cursor.execute(query, (username, email, password))
             await self.mysql.commit()
 

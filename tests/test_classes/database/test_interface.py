@@ -124,7 +124,7 @@ class TestDatabaseInterface:
             result = await db.get_user_by_username(username=test_user["username"])
         mock_connect.return_value.cursor.assert_called_once()
         mock_cursor.execute.assert_called_once_with(
-            "SELECT * FROM users WHERE name = %s", (test_user["username"],)
+            "SELECT * FROM users WHERE username = %s", (test_user["username"],)
         )
         mock_cursor.fetchone.assert_called_once()
         assert result.model_dump() == test_user
@@ -140,7 +140,7 @@ class TestDatabaseInterface:
             result = await db.get_user_by_username(username=test_user["username"])
         mock_connect.return_value.cursor.assert_called_once()
         mock_cursor.execute.assert_called_once_with(
-            "SELECT * FROM users WHERE name = %s", (test_user["username"],)
+            "SELECT * FROM users WHERE username = %s", (test_user["username"],)
         )
         mock_cursor.fetchone.assert_called_once()
         assert result is None
@@ -165,7 +165,7 @@ class TestDatabaseInterface:
         """If the user does not exist, the method should insert the user into the database."""
         # Test that the query is executed
         mock_connection.cursor.return_value.execute.assert_called_with(
-            "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
+            "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
             values,
         )
         # Test that the connection is committed

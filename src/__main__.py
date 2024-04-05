@@ -1,3 +1,4 @@
+import logging
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -8,6 +9,7 @@ app = FastAPI()
 load_dotenv(override=True)
 app.include_router(router=users_router)
 app.include_router(router=projects_router)
+logging.basicConfig(level=logging.DEBUG)
 
 
 @app.get(path="/")
