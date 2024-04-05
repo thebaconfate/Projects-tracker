@@ -41,6 +41,7 @@ class TestDatabaseInterface:
             database_interface_patch + ".__aenter__", new_callable=AsyncMock
         ) as mock_aenter:
             async with DatabaseInterface(**database_args):
+                """For the sake of only testing the __aenter__ method, we don't need to do anything in the with block."""
                 pass
             assert mock_aenter.called
 
@@ -61,6 +62,7 @@ class TestDatabaseInterface:
             database_interface_patch + ".__aexit__", new_callable=AsyncMock
         ) as mock_aexit:
             async with DatabaseInterface(**database_args):
+                """For the sake of only testing the __aexit__ method, we don't need to do anything in the with block."""
                 pass
             assert mock_aexit.called
 
