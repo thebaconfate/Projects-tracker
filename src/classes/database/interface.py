@@ -3,14 +3,18 @@ import mysql.connector.aio
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from src.classes.models.user import DBUserModel
-from src.classes.errors.database import DatabaseConnectionError, DatabaseUserAlreadyExistsError
+from src.classes.errors.database import (
+    DatabaseConnectionError,
+    DatabaseUserAlreadyExistsError,
+)
 from typing import Self
 
 HOST = os.getenv("DB_HOST")
 USER = os.getenv("DB_USER")
 PASSWORD = os.getenv("DB_PASSWORD")
 DATABASE = os.getenv("DB_DATABASE")
-PORT = int(os.getenv("DB_PORT"))
+PORT = os.getenv("DB_PORT")
+
 
 class DatabaseInterface:
     def __init__(
@@ -137,4 +141,3 @@ class DatabaseInterface:
             ),
         )
         await self.mysql.commit()
-

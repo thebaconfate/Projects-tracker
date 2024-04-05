@@ -11,6 +11,7 @@ from src.classes.errors.authentication import (
     UserNotFoundError,
 )
 from src.classes.models.user import DBUserModel, LoginUserModel
+from src.classes.models.auth import Token
 
 TOKEN_EXPIRATION = int(os.getenv("TOKEN_EXPIRATION"))
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -71,4 +72,7 @@ class AuthService:
         else:
             user_dict = await self.authenticate_user(user=user, user_in_db=result)
             token = await self.generate_jwt_token(user_dict)
-            return token
+            return Token(
+                access_token=token,
+                token_type="bearer",
+            )
