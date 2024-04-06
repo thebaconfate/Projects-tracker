@@ -6,16 +6,16 @@ import bcrypt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
-from src.classes.database.interface import DatabaseInterface
-from src.classes.errors.authentication import (
+from src.database.interface import DatabaseInterface
+from src.errors.authentication import (
     HashingAlgorithmError,
     IncorrectPasswordError,
     SecretKeyError,
     InvalidTokenException,
     UserNotFoundError,
 )
-from src.classes.models.user import DBUserModel, LoginUserModel
-from src.classes.models.auth import Token
+from src.models.user import DBUserModel, LoginUserModel
+from src.models.auth import Token
 
 TOKEN_EXPIRATION = int(os.getenv("TOKEN_EXPIRATION"))
 SECRET_KEY = os.getenv("SECRET_KEY")

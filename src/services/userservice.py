@@ -1,9 +1,9 @@
 import logging
 from fastapi import HTTPException, status
-from src.classes.services.authservice import AuthService
-from src.classes.errors.database import DatabaseUserAlreadyExistsError
-from src.classes.database.interface import DatabaseInterface
-from src.classes.models.user import NewUserModel
+from src.services.authservice import AuthService
+from src.errors.database import DatabaseUserAlreadyExistsError
+from src.database.interface import DatabaseInterface
+from src.models.user import NewUserModel
 
 
 class UserService:

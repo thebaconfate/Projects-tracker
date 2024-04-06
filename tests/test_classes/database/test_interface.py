@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from src.classes.database.interface import DatabaseInterface
+from src.database.interface import DatabaseInterface
 
 
 class TestDatabaseInterface:

@@ -3,8 +3,8 @@ import mysql.connector.aio
 from mysql.connector.errors import IntegrityError
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
-from src.classes.models.user import DBUserModel
-from src.classes.errors.database import (
+from src.models.user import DBUserModel
+from src.errors.database import (
     DatabaseConnectionError,
     DatabaseUserAlreadyExistsError,
 )
@@ -117,7 +117,6 @@ class DatabaseInterface:
             await self.mysql.commit()
         except IntegrityError:
             raise DatabaseUserAlreadyExistsError()
-
 
     async def update_password(self, user_id, new_password) -> None:
         cursor: MySQLCursorAbstract = await self.__cursor()
