@@ -146,17 +146,16 @@ class DatabaseInterface:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 UPDATE stages 
-                SET paid_eur = paid_eur + %s,
-                    paid_cents = paid_cents + %s,
-                    paid_eur = paid_eur + FLOOR(paid_cents / 100)
+                SET paid_cents = paid_cents + %s,
+                    paid_eur = paid_eur + FLOOR(paid_cents / 100) + %s
                     paid_cents = paid_cents % 100
                 WHERE id = %s
                 """
         await cursor.execute(
             query,
             (
-                eur,
                 cents,
+                eur,
                 stage_id,
             ),
         )
