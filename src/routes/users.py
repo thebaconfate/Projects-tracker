@@ -1,11 +1,9 @@
 import logging
-import os
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from src.services.userservice import UserService
 from src.services.authservice import AuthService
-from src.models.user import DBUserModel, LoginUserModel, NewUserModel
+from src.models.user import LoginUserModel, NewUserModel
 
 
 router = APIRouter(
@@ -50,8 +48,8 @@ async def register(user: NewUserModel):
         )
     else:
         response = Response(
-            status_code=status.HTTP_201_CREATED, content="User registered successfully"
+            status_code=status.HTTP_201_CREATED, content="User registered and logged in successfully"
         )
-        response.set_cookie(key="username", value=user.username)
+        token = await AuthService().login(LoginUserModel(username=user.username, password=user.password))
+        response.headers["Authorization"] = f"{token.token_type} {token.access_token}"
         return response
-

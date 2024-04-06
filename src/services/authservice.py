@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Annotated
 import bcrypt
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from src.database.interface import DatabaseInterface
@@ -21,7 +21,6 @@ TOKEN_EXPIRATION = int(os.getenv("TOKEN_EXPIRATION"))
 SECRET_KEY = os.getenv("SECRET_KEY")
 HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 class AuthService:
     def __init__(self):
@@ -58,7 +57,9 @@ class AuthService:
     async def get_current_user(
         self, token: Annotated[str, Depends(oauth2_scheme)]
     ) -> DBUserModel:
-        credentials_exception = InvalidTokenException()
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
         try:
             payload = jwt.decode(
                 token, self.SECRET_KEY, algorithms=[self.HASHING_ALGORITHM]
@@ -68,15 +69,26 @@ class AuthService:
             if username is None or user_id is None:
                 raise credentials_exception
         except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Token has expired"
+            )
+        except (jwt.JWTError, HTTPException):
             raise credentials_exception
-        except jwt.JWTError:
-            raise credentials_exception
+        except Exception as e:
+            logging.error(f"Error decoding token: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An unexpected error happened",
+            )
         else:
             async with DatabaseInterface() as db:
                 user: DBUserModel | None = await db.get_user_by_username_and_id(
                     username=username, user_id=user_id
                 )
-            return user
+            if user is None:
+                raise credentials_exception
+            else:
+                return user
 
     async def authenticate_user(
         self, user: LoginUserModel, user_in_db: DBUserModel | None
@@ -103,3 +115,5 @@ class AuthService:
             logging.debug(f"User found: {result}")
             user_dict = await self.authenticate_user(user=user, user_in_db=result)
             return Token(access_token=await self.generate_jwt_token(user_dict))
+
+authenticated = AuthService().get_current_user

@@ -36,3 +36,10 @@ class DatabaseUserAlreadyExistsError(DatabaseUserError):
     def __init__(self, message="User already exists"):
         self.message = message
         super().__init__(self.message)
+
+class DatabaseProjectAlreadyExistsError(DatabaseError):
+    """Error raised when a project already exists in the database"""
+
+    def __init__(self, message="Project already exists"):
+        self.message = message
+        super().__init__(self.message)

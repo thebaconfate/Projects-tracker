@@ -1,7 +1,11 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 
-from src.classes.services.stageservice import StageService
-from src.classes.services.projectservice import ProjectService
+from src.models.project import NewProject
+from src.models.user import DBUserModel
+from src.services.authservice import authenticated
+from src.services.stageservice import StageService
+from src.services.projectservice import ProjectService
 
 
 router = APIRouter(
@@ -11,20 +15,38 @@ router = APIRouter(
 )
 
 
-@router.get("/all")
-async def get_projects():
-    # TODO refactor this to use the user id of the logged in user.
-    return await ProjectService().get_all_projects(1)
-
-
 @router.get("/")
-async def get_project(project_id: int):
-    return await ProjectService().get_project(project_id)
+async def get_projects(user: Annotated[DBUserModel, Depends(authenticated)]):
+    return await ProjectService(user.id).get_all_projects()
 
 
-@router.get("/total_price/")
-async def get_total_price(project_id):
-    return await ProjectService().get_total_price(project_id)
+@router.post("/")
+async def create_project(
+    project: NewProject, user: Annotated[DBUserModel, Depends(authenticated)]
+):
+    return await ProjectService(user.id).create_project(project)
+
+
+@router.get("/{project_id}")
+async def get_project(
+    project_id: int,
+    user: Annotated[DBUserModel, Depends(authenticated)],
+):
+    return await ProjectService(user.id).get_project(project_id)
+
+
+@router.get("/{project_id}/project_price/")
+async def get_total_price(
+    project_id: int, user: Annotated[DBUserModel, Depends(authenticated)]
+):
+    return await ProjectService(user.id).calculate_project_price(project_id)
+
+
+@router.get("/{project_id}/owed_amount/")
+async def get_owed_amount(
+    project_id: int, user: Annotated[DBUserModel, Depends(authenticated)]
+):
+    return await ProjectService(user.id).calculate_owed_amount(project_id)
 
 
 @router.post("/{project_id}/pay")

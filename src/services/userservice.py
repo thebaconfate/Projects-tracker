@@ -23,7 +23,7 @@ class UserService:
                     password=await self.__hash_password(),
                 )
         except (DatabaseUserAlreadyExistsError, RuntimeError):
-            """RuntimeError added because the exception is being raised when a set size changes during iteration and i have no idea what causes it."""
+            """RuntimeError added because the exception is being raised when a set size changes during iteration and I have no idea what causes it."""
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=str(DatabaseUserAlreadyExistsError().message),
