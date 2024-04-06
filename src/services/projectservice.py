@@ -1,4 +1,4 @@
-from src.classes.database.interface import DatabaseInterface
+from src.database.interface import DatabaseInterface
 from datetime import timedelta
 
 
