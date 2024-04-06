@@ -144,15 +144,19 @@ class DatabaseInterface:
 
     async def update_paid_amount(self, stage_id, eur, cents):
         cursor: MySQLCursorAbstract = await self.__cursor()
-        query = "SELECT paid_eur, paid_cents FROM stages WHERE id = %s"
-        await cursor.execute(query, (stage_id,))
-        current_payment = await cursor.fetchone()
-        query = "UPDATE stages SET paid_eur = %s, paid_cents = %s WHERE id = %s"
+        query = """
+                UPDATE stages 
+                SET paid_eur = paid_eur + %s,
+                    paid_cents = paid_cents + %s,
+                    paid_eur = paid_eur + FLOOR(paid_cents / 100)
+                    paid_cents = paid_cents % 100
+                WHERE id = %s
+                """
         await cursor.execute(
             query,
             (
-                eur + current_payment["paid_eur"],
-                cents + current_payment["paid_cents"],
+                eur,
+                cents,
                 stage_id,
             ),
         )
