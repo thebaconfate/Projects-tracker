@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, UTC
+from functools import wraps
 import logging
 import os
+from typing import Annotated
 import bcrypt
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from src.classes.database.interface import DatabaseInterface
@@ -9,6 +12,7 @@ from src.classes.errors.authentication import (
     HashingAlgorithmError,
     IncorrectPasswordError,
     SecretKeyError,
+    InvalidTokenException,
     UserNotFoundError,
 )
 from src.classes.models.user import DBUserModel, LoginUserModel
@@ -17,11 +21,11 @@ from src.classes.models.auth import Token
 TOKEN_EXPIRATION = int(os.getenv("TOKEN_EXPIRATION"))
 SECRET_KEY = os.getenv("SECRET_KEY")
 HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class AuthService:
     def __init__(self):
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
         self.SECRET_KEY = SECRET_KEY
         self.HASHING_ALGORITHM = HASHING_ALGORITHM
         if self.SECRET_KEY is None:
@@ -52,6 +56,29 @@ class AuthService:
             claims=token, key=self.SECRET_KEY, algorithm=self.HASHING_ALGORITHM
         )
 
+    async def get_current_user(
+        self, token: Annotated[str, Depends(oauth2_scheme)]
+    ) -> DBUserModel:
+        credentials_exception = InvalidTokenException()
+        try:
+            payload = jwt.decode(
+                token, self.SECRET_KEY, algorithms=[self.HASHING_ALGORITHM]
+            )
+            username: str = payload.get("username")
+            user_id: int = payload.get("id")
+            if username is None or user_id is None:
+                raise credentials_exception
+        except jwt.ExpiredSignatureError:
+            raise credentials_exception
+        except jwt.JWTError:
+            raise credentials_exception
+        else:
+            async with DatabaseInterface() as db:
+                user: DBUserModel | None = await db.get_user_by_username_and_id(
+                    username=username, user_id=user_id
+                )
+            return user
+
     async def authenticate_user(
         self, user: LoginUserModel, user_in_db: DBUserModel | None
     ):
@@ -76,8 +103,4 @@ class AuthService:
         else:
             logging.debug(f"User found: {result}")
             user_dict = await self.authenticate_user(user=user, user_in_db=result)
-            token = await self.generate_jwt_token(user_dict)
-            return Token(
-                access_token=token,
-                token_type="bearer",
-            )
+            return Token(access_token=await self.generate_jwt_token(user_dict))

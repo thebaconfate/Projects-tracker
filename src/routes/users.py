@@ -1,10 +1,11 @@
 import logging
 import os
-from fastapi import APIRouter, HTTPException, Response, status
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from src.classes.services.userservice import UserService
 from src.classes.services.authservice import AuthService
-from src.classes.models.user import LoginUserModel, NewUserModel
+from src.classes.models.user import DBUserModel, LoginUserModel, NewUserModel
 
 
 async def get_secret_key() -> str:
@@ -43,7 +44,7 @@ async def login(user: LoginUserModel):
         response = Response(
             status_code=status.HTTP_200_OK, content="User logged in successfully"
         )
-        response.set_cookie(key=token.token_type, value=token.access_token)
+        response.headers["Authorization"] = f"{token.token_type} {token.access_token}"
         return response
 
 
@@ -65,3 +66,8 @@ async def register(user: NewUserModel):
         )
         response.set_cookie(key="username", value=user.username)
         return response
+
+
+@router.get(path=("/protected"))
+async def protected(user: Annotated[DBUserModel, Depends(AuthService().get_current_user)]):
+    return {"message": "This is a protected route"}

@@ -2,6 +2,7 @@ import logging
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
+
 from .routes.users import router as users_router
 from .routes.projects import router as projects_router
 

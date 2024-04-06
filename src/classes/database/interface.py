@@ -95,6 +95,18 @@ class DatabaseInterface:
         logging.debug("Getting user by email")
         return await self.__get_user_by_value(email, "email", cursor=cursor)
 
+    async def get_user_by_username_and_id(
+        self, username, user_id, cursor=None
+    ) -> DBUserModel | None:
+        logging.debug("Getting user by username and id")
+        if cursor is None:
+            cursor: MySQLCursorAbstract = await self.__cursor()
+        query = "SELECT * FROM users WHERE username = %s AND id = %s"
+        await cursor.execute(query, (username, user_id))
+        result = await cursor.fetchone()
+        logging.debug(f"Result: {result}")
+        return DBUserModel(**result) if result else None
+
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()

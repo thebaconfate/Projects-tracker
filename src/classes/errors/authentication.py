@@ -32,3 +32,10 @@ class IncorrectPasswordError(AuthenticationError):
 
     def __init__(self, message: str = "Incorrect password"):
         super().__init__(message)
+
+
+class InvalidTokenException(AuthenticationError):
+    """Error raised when the token is invalid"""
+
+    def __init__(self, message: str = "Invalid token"):
+        super().__init__(message)
