@@ -3,21 +3,9 @@ import os
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from src.classes.services.userservice import UserService
-from src.classes.services.authservice import AuthService
-from src.classes.models.user import DBUserModel, LoginUserModel, NewUserModel
-
-
-async def get_secret_key() -> str:
-    return os.getenv(key="SECRET_KEY")
-
-
-async def get_hashing_algorithm() -> str:
-    return os.getenv(key="HASHING_ALGORITHM")
-
-
-async def get_token_expiration() -> int:
-    return int(os.getenv(key="TOKEN_EXPIRATION"))
+from src.services.userservice import UserService
+from src.services.authservice import AuthService
+from src.models.user import DBUserModel, LoginUserModel, NewUserModel
 
 
 router = APIRouter(
@@ -67,7 +55,3 @@ async def register(user: NewUserModel):
         response.set_cookie(key="username", value=user.username)
         return response
 
-
-@router.get(path=("/protected"))
-async def protected(user: Annotated[DBUserModel, Depends(AuthService().get_current_user)]):
-    return {"message": "This is a protected route"}
