@@ -1,5 +1,6 @@
 import os
 import mysql.connector.aio
+from mysql.connector.errors import IntegrityError
 import logging
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from src.classes.models.user import DBUserModel
@@ -110,14 +111,13 @@ class DatabaseInterface:
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
-        user = await self.get_user_by_email(email, cursor=cursor)
-        if user:
-            logging.error(f"User tried to register with existing email {email}")
-            raise DatabaseUserAlreadyExistsError()
-        else:
-            query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+        query = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+        try:
             await cursor.execute(query, (username, email, password))
             await self.mysql.commit()
+        except IntegrityError:
+            raise DatabaseUserAlreadyExistsError()
+
 
     async def update_password(self, user_id, new_password) -> None:
         cursor: MySQLCursorAbstract = await self.__cursor()
