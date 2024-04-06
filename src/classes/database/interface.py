@@ -110,12 +110,7 @@ class DatabaseInterface:
     async def save_user(self, username, email, password) -> None:
         """Save user to database or throw an exception if user already exists"""
         cursor: MySQLCursorAbstract = await self.__cursor()
-        user = DBUserModel(
-            email="email@email.com",
-            username="gerard lichtert",
-            password=b"password",
-            id=1,
-        )
+        user = await self.get_user_by_email(email, cursor=cursor)
         if user:
             logging.error(f"User tried to register with existing email {email}")
             raise DatabaseUserAlreadyExistsError()
