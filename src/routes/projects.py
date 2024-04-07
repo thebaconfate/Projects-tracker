@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends
 from src.models.project import NewProject
 from src.models.user import DBUserModel
 from src.services.authservice import authenticated
-from src.services.stageservice import StageService
 from src.services.projectservice import ProjectService
 
 

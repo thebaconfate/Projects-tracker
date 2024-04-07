@@ -5,11 +5,13 @@ from fastapi import FastAPI
 
 from .routes.users import router as users_router
 from .routes.projects import router as projects_router
+from .routes.stages import router as stages_router
 
 app = FastAPI()
 load_dotenv(override=True)
 app.include_router(router=users_router)
 app.include_router(router=projects_router)
+app.include_router(router=stages_router)
 logging.basicConfig(level=logging.DEBUG)
 
 

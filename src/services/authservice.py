@@ -11,7 +11,6 @@ from src.errors.authentication import (
     HashingAlgorithmError,
     IncorrectPasswordError,
     SecretKeyError,
-    InvalidTokenException,
     UserNotFoundError,
 )
 from src.models.user import DBUserModel, LoginUserModel

@@ -1,8 +1,10 @@
 from fastapi import APIRouter
 from typing import Annotated
 from fastapi import Depends
+from src.services.stageservice import StageService
+from src.models.payment import FloatPayment, IntPayment
 from src.services.authservice import authenticated
-from models.user import DBUserModel
+from src.models.user import DBUserModel
 
 router = APIRouter(
     prefix="/projects/{project_id}/stage",
@@ -13,9 +15,7 @@ router = APIRouter(
 
 @router.get("/{stage_id}/")
 async def get_stages(
-    project_id: int,
-    stage_id: int,
-    user: Annotated[DBUserModel, Depends(authenticated)]
+    project_id: int, stage_id: int, user: Annotated[DBUserModel, Depends(authenticated)]
 ):
     return "get_stages"
 
@@ -24,6 +24,8 @@ async def get_stages(
 async def make_payment(
     project_id: int,
     stages_id: int,
-    user: Annotated[DBUserModel, Depends(authenticated)]
+    payment: FloatPayment | IntPayment,
+    user: Annotated[DBUserModel, Depends(authenticated)],
 ):
-    return "pay_stage"
+    await StageService(user.id, project_id, stages_id).receive_payment(payment)
+    return "make_payment"
