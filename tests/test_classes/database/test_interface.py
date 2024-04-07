@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
 import pytest
 from unittest.mock import patch, AsyncMock
+from src.models.project import DBProjectModel, SummarizedStageModel
 from src.errors.database import DatabaseUserAlreadyExistsError
 from mysql.connector.errors import IntegrityError
 from src.database.interface import DatabaseInterface
@@ -215,8 +217,13 @@ class TestDatabaseInterface:
     async def test_get_projects(self, mock_connect, database_args, test_user):
         "tests if get_projects gets a list of projects with their project id and project name"
         mock_connection = mock_connect.return_value
-        expected_result = [(1, "project1"), (2, "project2")]
-        mock_connection.cursor.return_value.fetchall.return_value = expected_result
+        query_result = [
+            {"id": 1, "name": "project1"},
+            {"id": 2, "name": "project2"},
+            {"id": 3, "name": "project3"},
+        ]
+        expected_result = [DBProjectModel(**row) for row in query_result]
+        mock_connection.cursor.return_value.fetchall.return_value = query_result
         async with DatabaseInterface(**database_args) as db:
             result = await db.get_projects(test_user["id"])
         mock_connection.cursor.assert_called_once()
@@ -235,9 +242,15 @@ class TestDatabaseInterface:
     async def test_get_project(self, mock_connect, database_args, test_user):
         """tests if get_stages gets the stage id and stage name"""
         mock_connection = mock_connect.return_value
-        expected_result = [(1, "stage1"), (2, "stage2")]
+        time1 = datetime.now()
+        time2 = datetime.now() + timedelta(days=1)
+        query_result = [
+            {"id": 1, "name": "stage1", "last_updated": time1},
+            {"id": 2, "name": "stage2", "last_updated": time2},
+        ]
+        expected_result = [SummarizedStageModel(**row) for row in query_result]
         project_id = 1
-        mock_connection.cursor.return_value.fetchall.return_value = expected_result
+        mock_connection.cursor.return_value.fetchall.return_value = query_result
         async with DatabaseInterface(**database_args) as db:
             result = await db.get_project(project_id)
         mock_connection.cursor.assert_called_once()

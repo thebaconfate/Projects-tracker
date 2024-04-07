@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -16,7 +17,7 @@ class ProjectOwnerModel(BaseModel):
 
 class DBProjectModel(BaseProjectModel):
     id: int
-    owner_id: int
+    owner_id: Optional[int] = None
 
 
 class ProjectPriceModel(BaseModel):
