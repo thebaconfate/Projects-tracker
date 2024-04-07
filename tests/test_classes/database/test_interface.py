@@ -237,18 +237,18 @@ class TestDatabaseInterface:
         mock_connection = mock_connect.return_value
         expected_result = [(1, "stage1"), (2, "stage2")]
         project_id = 1
-        mock_connection.cursor.return_value.fetchone.return_value = expected_result
+        mock_connection.cursor.return_value.fetchall.return_value = expected_result
         async with DatabaseInterface(**database_args) as db:
-            result = await db.get_project(test_user["id"], project_id)
+            result = await db.get_project(project_id)
         mock_connection.cursor.assert_called_once()
         mock_connection.cursor.return_value.execute.assert_called_once_with(
             """
                 SELECT stages.id, stages.name, stages.last_updated
                 FROM projects
                 LEFT JOIN stages on projects.id = stages.project_id 
-                WHERE projects.id = %s AND projects.owner_id = %s
+                WHERE projects.id = %s
                 """,
-            (project_id, test_user["id"]),
+            (project_id,),
         )
-        mock_connection.cursor.return_value.fetchone.assert_called_once()
+        mock_connection.cursor.return_value.fetchall.assert_called_once()
         assert result == expected_result

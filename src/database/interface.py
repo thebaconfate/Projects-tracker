@@ -155,8 +155,19 @@ class DatabaseInterface:
                 """
         await cursor.execute(query, (user_id,))
         return await cursor.fetchall()
+    
 
-    async def get_project(self, owner_id: int, project_id: int):
+    async def get_project_owner(self, project_id: int):
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = """
+                SELECT owner_id 
+                FROM projects 
+                WHERE id = %s
+                """
+        await cursor.execute(query, (project_id,))
+        return await cursor.fetchone()
+
+    async def get_project(self, project_id: int):
         # TODO refactor to query on project_id only
         # TODO refactor to return a model
         cursor: MySQLCursorAbstract = await self.__cursor()
@@ -164,16 +175,14 @@ class DatabaseInterface:
                 SELECT stages.id, stages.name, stages.last_updated
                 FROM projects
                 LEFT JOIN stages on projects.id = stages.project_id 
-                WHERE projects.id = %s AND projects.owner_id = %s
+                WHERE projects.id = %s
                 """
         await cursor.execute(
             query,
-            (
-                project_id,
-                owner_id,
-            ),
+            (project_id,),
         )
-        return await cursor.fetchone()
+        return await cursor.fetchall()
+
 
     async def create_project(self, owner_id: int, project_name: str):
         cursor: MySQLCursorAbstract = await self.__cursor()

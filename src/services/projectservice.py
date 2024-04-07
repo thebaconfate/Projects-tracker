@@ -15,9 +15,20 @@ class ProjectService:
             return await db.get_projects(self.user_id)
 
     async def get_project(self, project_id: int):
-        """# TODO db.get_project should only require a project id, if the return value is none the resource doesn't exist. The return value should be 404 Not found. If the user is not the owner of the project, return 403 Forbidden"""
         async with DatabaseInterface() as db:
-            return await db.get_project(self.user_id, project_id)
+            owner_id = await db.get_project_owner(project_id)
+            if owner_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Project not found",
+                )
+            elif owner_id["owner_id"] != self.user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="User is not the owner of the project",
+                )
+            else:
+                return await db.get_project(project_id)
 
     async def create_project(self, project: NewProject):
         async with DatabaseInterface() as db:
