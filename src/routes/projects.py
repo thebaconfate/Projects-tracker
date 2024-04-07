@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from src.models.project import NewProject
+from src.models.project import NewProjectModel
 from src.models.user import DBUserModel
 from src.services.authservice import authenticated
 from src.services.projectservice import ProjectService
@@ -21,7 +21,7 @@ async def get_projects(user: Annotated[DBUserModel, Depends(authenticated)]):
 
 @router.post("/")
 async def create_project(
-    project: NewProject, user: Annotated[DBUserModel, Depends(authenticated)]
+    project: NewProjectModel, user: Annotated[DBUserModel, Depends(authenticated)]
 ):
     return await ProjectService(user.id).create_project(project)
 

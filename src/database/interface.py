@@ -6,6 +6,14 @@ import mysql.connector.aio
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from mysql.connector.errors import IntegrityError
 
+from src.models.project import (
+    DBProjectModel,
+    ProjectBalanceModel,
+    ProjectOwnerModel,
+    SummarizedStageModel,
+    ProjectPriceModel,
+)
+from src.models.stage import DBStageModel
 from src.errors.database import (
     DatabaseConnectionError,
     DatabaseProjectAlreadyExistsError,
@@ -146,7 +154,7 @@ class DatabaseInterface:
         await cursor.execute(query, (new_password, user_id))
         await self.mysql.commit()
 
-    async def get_projects(self, user_id: int):
+    async def get_projects(self, user_id: int) -> list[DBProjectModel]:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 SELECT id, name 
@@ -154,10 +162,10 @@ class DatabaseInterface:
                 WHERE owner_id = %s
                 """
         await cursor.execute(query, (user_id,))
-        return await cursor.fetchall()
-    
+        result = await cursor.fetchall()
+        return [DBProjectModel(**row) for row in result]
 
-    async def get_project_owner(self, project_id: int):
+    async def get_project_owner(self, project_id: int) -> ProjectOwnerModel | None:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 SELECT owner_id 
@@ -165,11 +173,10 @@ class DatabaseInterface:
                 WHERE id = %s
                 """
         await cursor.execute(query, (project_id,))
-        return await cursor.fetchone()
+        result = await cursor.fetchone()
+        return ProjectOwnerModel(**result) if result else None
 
-    async def get_project(self, project_id: int):
-        # TODO refactor to query on project_id only
-        # TODO refactor to return a model
+    async def get_project(self, project_id: int) -> list[SummarizedStageModel]:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 SELECT stages.id, stages.name, stages.last_updated
@@ -181,8 +188,8 @@ class DatabaseInterface:
             query,
             (project_id,),
         )
-        return await cursor.fetchall()
-
+        result = await cursor.fetchall()
+        return [SummarizedStageModel(**row) for row in result]
 
     async def create_project(self, owner_id: int, project_name: str):
         cursor: MySQLCursorAbstract = await self.__cursor()
@@ -197,16 +204,19 @@ class DatabaseInterface:
         except IntegrityError:
             raise DatabaseProjectAlreadyExistsError()
 
-    async def get_project_price(self, project_id):
+    async def get_project_price(self, project_id) -> list[ProjectPriceModel]:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 SELECT days, seconds, price 
                 FROM stages WHERE project_id = %s
                 """
         await cursor.execute(query, (project_id,))
-        return await cursor.fetchall()
+        result = await cursor.fetchall()
+        return [ProjectPriceModel(**row) for row in result]
 
-    async def get_project_price_and_paid(self, owner_id, project_id):
+    async def get_project_price_and_paid(
+        self, owner_id, project_id
+    ) -> list[ProjectBalanceModel]:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 SELECT stages.days, stages.seconds, stages.price, stages.paid_eur, stages.paid_cents
@@ -221,9 +231,10 @@ class DatabaseInterface:
                 owner_id,
             ),
         )
-        return await cursor.fetchall()
+        result = await cursor.fetchall()
+        return [ProjectBalanceModel(**row) for row in result]
 
-    async def update_paid_amount(self, stage_id, eur, cents):
+    async def update_paid_amount(self, stage_id, eur, cents) -> None:
         cursor: MySQLCursorAbstract = await self.__cursor()
         query = """
                 UPDATE stages 
@@ -241,3 +252,14 @@ class DatabaseInterface:
             ),
         )
         await self.mysql.commit()
+
+    async def get_stage(self, stage_id: int) -> DBStageModel | None:
+        cursor: MySQLCursorAbstract = await self.__cursor()
+        query = """
+                SELECT * 
+                FROM stages 
+                WHERE id = %s
+                """
+        await cursor.execute(query, (stage_id,))
+        result = await cursor.fetchone()
+        return DBStageModel(**result) if result else None

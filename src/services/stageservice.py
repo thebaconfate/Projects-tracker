@@ -1,4 +1,4 @@
-from src.models.payment import FloatPayment
+from src.models.payment import FloatPayment, IntPayment
 from src.database.interface import DatabaseInterface
 from src.services.projectservice import ProjectService
 
@@ -22,6 +22,12 @@ class StageService:
     def project_service(self):
         return self.__project_service
         # check if the stage is owned by the user else throw an exception
+
+    async def get_stage(self):
+        async with DatabaseInterface() as db:
+            await self.project_service.authorize(self.project_id, db)
+            return await db.get_stage(self.stage_id)
+
 
     async def receive_payment(self, total_amount: FloatPayment | IntPayment):
         await self.project_service.authorize(self.project_id)

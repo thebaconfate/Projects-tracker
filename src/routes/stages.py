@@ -14,10 +14,10 @@ router = APIRouter(
 
 
 @router.get("/{stage_id}/")
-async def get_stages(
+async def get_stage(
     project_id: int, stage_id: int, user: Annotated[DBUserModel, Depends(authenticated)]
 ):
-    return "get_stages"
+    return await StageService(user.id, project_id, stage_id).get_stage()
 
 
 @router.post("/{stages_id}/pay")
