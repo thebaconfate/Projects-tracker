@@ -1,5 +1,7 @@
 import pytest
 from unittest.mock import patch, AsyncMock
+from src.errors.database import DatabaseUserAlreadyExistsError
+from mysql.connector.errors import IntegrityError
 from src.database.interface import DatabaseInterface
 
 # TODO fix queries in the tests
@@ -25,7 +27,7 @@ class TestDatabaseInterface:
 
     @pytest.fixture
     def database_interface_patch(self):
-        yield "src.classes.database.interface.DatabaseInterface"
+        yield "src.database.interface.DatabaseInterface"
 
     @pytest.fixture
     def test_user(self):
@@ -160,14 +162,15 @@ class TestDatabaseInterface:
             await db.save_user(*values)
         """The method should first test if the user already exists."""
         mock_connection.cursor.assert_called_once()
-        assert (
-            mock_connection.cursor.return_value.execute.call_count == 2
-        )  # should have queried the database and saved the user = 2 execution calls
-        mock_connection.cursor.return_value.fetchone.assert_called_once()
+        mock_connection.cursor.return_value.execute.assert_called_once()
         """If the user does not exist, the method should insert the user into the database."""
         # Test that the query is executed
         mock_connection.cursor.return_value.execute.assert_called_with(
-            "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+            """
+                INSERT INTO users 
+                (username, email, password) 
+                VALUES (%s, %s, %s)
+                """,
             values,
         )
         # Test that the connection is committed
@@ -182,9 +185,9 @@ class TestDatabaseInterface:
         del test_user["id"]
         values = tuple(test_user.values())
         mock_connection = mock_connect.return_value
-        mock_connection.cursor.fetchone.return_value = test_user
+        mock_connection.cursor.return_value.execute.side_effect = IntegrityError
         async with DatabaseInterface(**database_args) as db:
-            with pytest.raises(Exception):
+            with pytest.raises(DatabaseUserAlreadyExistsError):
                 await db.save_user(*values)
         mock_connection.cursor.assert_called_once()
         mock_connection.cursor.return_value.execute.assert_called_once()
@@ -199,7 +202,11 @@ class TestDatabaseInterface:
             await db.update_password(test_user["id"], new_password)
         mock_connection.cursor.assert_called_once()
         mock_connection.cursor.return_value.execute.assert_called_once_with(
-            "UPDATE users SET password = %s WHERE id = %s",
+            """
+                UPDATE users 
+                SET password = %s 
+                WHERE id = %s
+                """,
             (new_password, test_user["id"]),
         )
         mock_connection.commit.assert_called_once()
@@ -214,7 +221,12 @@ class TestDatabaseInterface:
             result = await db.get_projects(test_user["id"])
         mock_connection.cursor.assert_called_once()
         mock_connection.cursor.return_value.execute.assert_called_once_with(
-            "SELECT id, name FROM projects WHERE owner_id = %s", (test_user["id"],)
+            """
+                SELECT id, name 
+                FROM projects 
+                WHERE owner_id = %s
+                """,
+            (test_user["id"],),
         )
         mock_connection.cursor.return_value.fetchall.assert_called_once()
         assert result == expected_result
