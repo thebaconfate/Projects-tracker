@@ -13,7 +13,9 @@ router = APIRouter(
 
 @router.get("/{stage_id}/")
 async def get_stages(
-    project_id: int, stage_id: int, user: Annotated[DBUserModel, Depends(authenticated)]
+    project_id: int,
+    stage_id: int,
+    user: Annotated[DBUserModel, Depends(authenticated)]
 ):
     return "get_stages"
 
@@ -22,6 +24,6 @@ async def get_stages(
 async def make_payment(
     project_id: int,
     stages_id: int,
-    user: Annotated[DBUserModel, Depends(authenticated)],
+    user: Annotated[DBUserModel, Depends(authenticated)]
 ):
     return "pay_stage"

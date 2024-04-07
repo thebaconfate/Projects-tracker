@@ -8,7 +8,28 @@ from src.models.project import NewProject
 
 class ProjectService:
     def __init__(self, user_id: int):
-        self.user_id: int = user_id
+        self.__user_id: int = user_id
+
+    @property
+    def user_id(self):
+        return self.__user_id
+
+    async def authorize(self, project_id: int, db: DatabaseInterface | None = None):
+        if db is None:
+            async with DatabaseInterface() as db:
+                owner_id = await db.get_project_owner(project_id)
+        else:
+            owner_id = await db.get_project_owner(project_id)
+        if owner_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found",
+            )
+        elif owner_id["owner_id"] != self.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User is not the owner of the project",
+            )
 
     async def get_all_projects(self):
         async with DatabaseInterface() as db:
@@ -16,19 +37,8 @@ class ProjectService:
 
     async def get_project(self, project_id: int):
         async with DatabaseInterface() as db:
-            owner_id = await db.get_project_owner(project_id)
-            if owner_id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Project not found",
-                )
-            elif owner_id["owner_id"] != self.user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User is not the owner of the project",
-                )
-            else:
-                return await db.get_project(project_id)
+            await self.authorize(project_id, db)
+            return await db.get_project(project_id)
 
     async def create_project(self, project: NewProject):
         async with DatabaseInterface() as db:
@@ -42,10 +52,9 @@ class ProjectService:
 
     async def calculate_project_price(self, project_id: int):
         async with DatabaseInterface() as db:
-            list_of_stages = await db.get_project_price(
-                self.user_id, project_id=project_id
-            )
-        total_price, total_paid = 0, 0
+            await self.authorize(project_id, db)
+            list_of_stages = await db.get_project_price(project_id=project_id)
+        total_price = 0
         for stage in list_of_stages:
             stage_price = float(stage["price"])
             time = timedelta(
@@ -57,10 +66,10 @@ class ProjectService:
             minutes = minutes % 60
             total_price += stage_price * hours
             total_price += stage_price * (minutes // 15) * (stage_price / 4)
-            total_paid += float(stage["paid_eur"]) + float(stage["paid_cents"]) / 100
-        total_price = round(total_price - total_paid, 2)
+        total_price = round(total_price, 2)
         return total_price
 
     async def calculate_owed_amount(self, project_id: int):
         async with DatabaseInterface() as db:
+            # TODO implement this method
             pass
