@@ -27,7 +27,7 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 bcrypt = "^4.1.2"
 
 [tool.poetry.scripts]
-main = "src.__main__:start"
+main = "src.main:start"
 
 [build-system]
 requires = ["poetry-core"]
