@@ -21,6 +21,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 class AuthService:
     def __init__(self):
         self.SECRET_KEY = SECRET_KEY
@@ -109,10 +110,12 @@ class AuthService:
             elif user.username:
                 result = await db.get_user_by_username(username=user.username)
         if result is None:
+            logging.debug("User not found")
             raise UserNotFoundError("User not found")
         else:
             logging.debug(f"User found: {result}")
             user_dict = await self.authenticate_user(user=user, user_in_db=result)
             return Token(access_token=await self.generate_jwt_token(user_dict))
+
 
 authenticated = AuthService().get_current_user
