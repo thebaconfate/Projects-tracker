@@ -18,7 +18,11 @@ async def login(user: LoginUserModel):
     """Logs a user in by checking the database for a matching username and password"""
     try:
         logging.info(f"Attempting to log in user: {user}")
-        token = await AuthService().login(user)
+        async_token = AuthService().login(user)
+        response = Response(
+            status_code=status.HTTP_200_OK, content="User logged in successfully"
+        )
+        token = await async_token
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -27,9 +31,6 @@ async def login(user: LoginUserModel):
             detail=str(e),
         )
     else:
-        response = Response(
-            status_code=status.HTTP_200_OK, content="User logged in successfully"
-        )
         response.headers["Authorization"] = f"{token.token_type} {token.access_token}"
         return response
 
@@ -47,9 +48,13 @@ async def register(user: NewUserModel):
             detail=str(e),
         )
     else:
-        response = Response(
-            status_code=status.HTTP_201_CREATED, content="User registered and logged in successfully"
+        async_token = AuthService().login(
+            LoginUserModel(username=user.username, password=user.password)
         )
-        token = await AuthService().login(LoginUserModel(username=user.username, password=user.password))
+        response = Response(
+            status_code=status.HTTP_201_CREATED,
+            content="User registered and logged in successfully",
+        )
+        token = await async_token
         response.headers["Authorization"] = f"{token.token_type} {token.access_token}"
         return response

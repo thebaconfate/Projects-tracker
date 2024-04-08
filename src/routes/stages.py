@@ -1,6 +1,5 @@
-from fastapi import APIRouter
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, APIRouter, Response, status
 from src.services.stageservice import StageService
 from src.models.payment import FloatPayment, IntPayment
 from src.services.authservice import authenticated
@@ -20,7 +19,7 @@ async def get_stage(
     return await StageService(user.id, project_id, stage_id).get_stage()
 
 
-@router.post("/{stages_id}/pay")
+@router.post("/{stages_id}/make_payment/")
 async def make_payment(
     project_id: int,
     stages_id: int,
@@ -28,4 +27,6 @@ async def make_payment(
     user: Annotated[DBUserModel, Depends(authenticated)],
 ):
     await StageService(user.id, project_id, stages_id).receive_payment(payment)
-    return "make_payment"
+    return Response(
+        status_code=status.HTTP_200_OK, content="Payment made successfully"
+    )

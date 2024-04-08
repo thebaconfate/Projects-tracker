@@ -239,7 +239,7 @@ class DatabaseInterface:
         query = """
                 UPDATE stages 
                 SET paid_cents = paid_cents + %s,
-                    paid_eur = paid_eur + FLOOR(paid_cents / 100) + %s
+                    paid_eur = paid_eur + FLOOR(paid_cents / 100) + %s,
                     paid_cents = paid_cents % 100
                 WHERE id = %s
                 """
