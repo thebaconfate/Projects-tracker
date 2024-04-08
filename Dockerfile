@@ -33,8 +33,11 @@ ENV DB_PORT=$MYSQLPORT
 ARG SECRET_KEY
 ENV SECRET_KEY=$SECRET_KEY
 
+ARG TOKEN_EXPIRATION
+ENV TOKEN_EXPIRATION=$TOKEN_EXPIRATION
+
 # Expose the port that FastAPI will run on
 EXPOSE 8000
 
 # Command to run the application
-CMD ["poetry", "run", "main"]
+ENTRYPOINT ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000" ]
