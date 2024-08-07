@@ -1,8 +1,11 @@
+import os
 from dotenv import load_dotenv
 
 from src.database.databaseinitiator import DatabaseInitiator
 
 load_dotenv(override=True)
 
-with DatabaseInitiator() as db:
-    db.init_db()
+TESTING = os.getenv("TESTING")
+if not TESTING:
+    with DatabaseInitiator() as db:
+        db.init_db()
