@@ -1,11 +1,11 @@
 import logging
-import os
 from typing import Self
 
 import mysql.connector.aio
 from mysql.connector.aio.abstracts import MySQLCursorAbstract
 from mysql.connector.errors import IntegrityError
 
+from src.database import HOST, USER, DATABASE, PASSWORD, PORT
 from src.models.project import (
     DBProjectModel,
     ProjectBalanceModel,
@@ -20,12 +20,6 @@ from src.errors.database import (
     DatabaseUserAlreadyExistsError,
 )
 from src.models.user import DBUserModel
-
-HOST = os.getenv("DB_HOST")
-USER = os.getenv("DB_USER")
-PASSWORD = os.getenv("DB_PASSWORD")
-DATABASE = os.getenv("DB_DATABASE")
-PORT = os.getenv("DB_PORT")
 
 
 class DatabaseInterface:
@@ -59,7 +53,8 @@ class DatabaseInterface:
             logging.info(msg=f"Connected to database at {self.host}")
         except mysql.connector.Error as e:
             logging.error(
-                msg=f"Failed to connect to database at {self.host} with error message:\n {e}"
+                msg=f"Failed to connect to database at {
+                    self.host} with error message:\n {e}"
             )
             raise DatabaseConnectionError(
                 message="Could not establish connection to database"
