@@ -20,7 +20,7 @@ class DatabaseInitiator:
             self.password: str = password
             self.database: str = database
             self.port: int = port if isinstance(port, int) else int(port)
-            self.mysql: None | mysql.connector.MySQLConnection = None
+        self.mysql: None | mysql.connector.MySQLConnection = None
 
     def __init_possible(self):
         return HOST and USER and PASSWORD and DATABASE
