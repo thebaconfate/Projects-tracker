@@ -59,8 +59,8 @@ class ProjectService:
             )
         total_price = 0
         for stage in list_of_stages:
-            hours = stage.days * 24 + (stage.seconds // 3600)
-            minutes = (stage.seconds // 60) % 60
+            hours: int = stage.days * 24 + (stage.seconds // 3600)
+            minutes: int = (stage.seconds // 60) % 60
             total_price += hours * stage.price + (minutes // 15) * (stage.price / 4)
         return total_price
 
