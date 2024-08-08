@@ -20,7 +20,7 @@ class ProjectService:
                     project_id
                 )
         else:
-            project: ProjectOwnerModel = await db.get_project_owner(project_id)
+            project: ProjectOwnerModel | None = await db.get_project_owner(project_id)
         if project is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
