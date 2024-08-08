@@ -16,7 +16,15 @@ from src.errors.authentication import (
 from src.models.user import DBUserModel, LoginUserModel
 from src.models.auth import Token
 
-TOKEN_EXPIRATION = int(os.getenv("TOKEN_EXPIRATION"))
+
+def read_token_expiration():
+    token_expiration = os.getenv("TOKEN_EXPIRATION")
+    return (
+        token_expiration if isinstance(token_expiration, int) else int(token_expiration)
+    )
+
+
+TOKEN_EXPIRATION = read_token_expiration()
 SECRET_KEY = os.getenv("SECRET_KEY")
 HASHING_ALGORITHM = os.getenv("HASHING_ALGORITHM")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
