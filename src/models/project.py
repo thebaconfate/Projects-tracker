@@ -7,7 +7,7 @@ class BaseProjectModel(BaseModel):
     name: str
 
 
-class NewProjectModel(BaseModel):
+class NewProjectModel(BaseProjectModel):
     pass
 
 

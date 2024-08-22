@@ -5,7 +5,7 @@ from typing import Annotated
 import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
+import jwt
 from src.database.interface import DatabaseInterface
 from src.errors.authentication import (
     HashingAlgorithmError,
@@ -51,15 +51,15 @@ class AuthService:
         return hashed_password
 
     async def generate_jwt_token(self, dict, expiration=TOKEN_EXPIRATION):
-        token = dict.copy()
+        claim = dict.copy()
         expires = datetime.now(UTC) + (
             timedelta(minutes=int(expiration))
             if expiration is not None
             else timedelta(minutes=15)
         )
-        token.update({"exp": expires})
+        claim.update({"exp": expires})
         return jwt.encode(
-            claims=token, key=self.SECRET_KEY, algorithm=self.HASHING_ALGORITHM
+            payload=claim, key=self.SECRET_KEY, algorithm=self.HASHING_ALGORITHM
         )
 
     async def get_current_user(
@@ -70,17 +70,16 @@ class AuthService:
         )
         try:
             payload = jwt.decode(
-                token, self.SECRET_KEY, algorithms=[self.HASHING_ALGORITHM]
+                jwt=token,
+                key=self.SECRET_KEY,
+                algorithms=[self.HASHING_ALGORITHM],
+                options={"require": ["username", "id", "exp"]},
             )
-            username: str = payload.get("username")
-            user_id: int = payload.get("id")
-            if username is None or user_id is None:
-                raise credentials_exception
         except jwt.ExpiredSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Token has expired"
             )
-        except (jwt.JWTError, HTTPException):
+        except (jwt.PyJWTError, HTTPException, jwt.MissingRequiredClaimError):
             raise credentials_exception
         except Exception as e:
             logging.error(f"Error decoding token: {e}")
@@ -89,6 +88,8 @@ class AuthService:
                 detail="An unexpected error happened",
             )
         else:
+            username: str = payload.get("username")
+            user_id: int = payload.get("id")
             async with DatabaseInterface() as db:
                 user: DBUserModel | None = await db.get_user_by_username_and_id(
                     username=username, user_id=user_id

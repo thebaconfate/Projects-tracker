@@ -20,7 +20,7 @@ class ProjectService:
                     project_id
                 )
         else:
-            project: ProjectOwnerModel = await db.get_project_owner(project_id)
+            project: ProjectOwnerModel | None = await db.get_project_owner(project_id)
         if project is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -59,8 +59,8 @@ class ProjectService:
             )
         total_price = 0
         for stage in list_of_stages:
-            hours = stage.days * 24 + (stage.seconds // 3600)
-            minutes = (stage.seconds // 60) % 60
+            hours: int = stage.days * 24 + (stage.seconds // 3600)
+            minutes: int = (stage.seconds // 60) % 60
             total_price += hours * stage.price + (minutes // 15) * (stage.price / 4)
         return total_price
 

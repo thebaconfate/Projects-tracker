@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any, Coroutine
 from fastapi import APIRouter, Depends, Response, status
 
 from src.models.project import NewProjectModel
@@ -23,7 +23,9 @@ async def get_projects(user: Annotated[DBUserModel, Depends(authenticated)]):
 async def create_project(
     project: NewProjectModel, user: Annotated[DBUserModel, Depends(authenticated)]
 ):
-    async_creation = ProjectService(user.id).create_project(project)
+    async_creation: Coroutine[Any, Any, None] = ProjectService(user.id).create_project(
+        project
+    )
     response = Response(
         status_code=status.HTTP_201_CREATED, content="Project created successfully"
     )

@@ -79,6 +79,10 @@ class DatabaseInterface:
         """Return cursor for database interaction"""
         return await self.mysql.cursor(dictionary=True)
 
+    ########################
+    # User related queries #
+    ########################
+
     async def __get_user_by_value(
         self,
         query_value: str,
@@ -148,6 +152,10 @@ class DatabaseInterface:
                 """
         await cursor.execute(query, (new_password, user_id))
         await self.mysql.commit()
+
+    ###########################
+    # Project related queries #
+    ###########################
 
     async def get_projects(self, user_id: int) -> list[DBProjectModel]:
         cursor: MySQLCursorAbstract = await self.__cursor()
@@ -247,6 +255,15 @@ class DatabaseInterface:
             ),
         )
         await self.mysql.commit()
+
+    #########################
+    # Stage related queries #
+    #########################
+
+    async def create_stage(self, name, project_id) -> None:
+        cursor = await self.__cursor()
+        query = """INSERT INTO stages (name, project_id) values (%s, %s)"""
+        await cursor.execute(query, (name, project_id))
 
     async def get_stage(self, stage_id: int) -> DBStageModel | None:
         cursor: MySQLCursorAbstract = await self.__cursor()

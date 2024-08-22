@@ -12,3 +12,7 @@ class DBStageModel(BaseModel):
     paid_eur: int
     paid_cents: int
     last_updated: datetime
+
+class NewStageModel(BaseModel):
+    project_id: int
+    stage_name: str
